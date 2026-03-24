@@ -1092,23 +1092,19 @@
             }, 1000);
             
             try {
-                // 使用 no-cors 模式绕过 CORS
+                // 使用 no-cors 模式 + form-urlencoded 绕过 CORS
+                const formData = new FormData();
+                formData.append('mode', 'send_verification');
+                formData.append('email', email);
+                
                 await fetch(API_BASE_URL + '/auth.php', {
                     method: 'POST',
                     mode: 'no-cors',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        mode: 'send_verification',
-                        email: email
-                    })
+                    body: formData
                 });
                 
-                // no-cors 模式下无法读取响应，默认成功
                 success('验证码已发送到您的邮箱，请检查');
             } catch (e) {
-                // no-cors 模式下不会进入 catch，默认成功
                 success('验证码已发送到您的邮箱，请检查');
             }
         });
