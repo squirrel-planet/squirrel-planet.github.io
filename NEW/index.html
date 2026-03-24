@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>松鼠星球 | 代码与艺术缠绕的魔法秘境</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600&family=Noto+Sans+SC:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap");
+
+        :root {
+            --orange-primary: #ff8c00;
+            --orange-light: #ffa600;
+            --orange-dark: #ff6a00;
+            --orange-glow: #FFB347;
+            --dark: #1f1f1f;
+            --starry-sky-color: #000000;
+            --card-color-1: #ff9604;
+            --card-color-2: var(--dark);
+            --text-dim: #94a3b8;
+            --text-light: #f8fafc;
+        }
+
+        html {
+            min-width: 30rem;
+            min-height: 25rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        a {
+            transition: color 0.2s ease, opacity 0.2s ease;
+        }
+
+        body {
+            font-family: "serif";
+            background-color: var(--dark);
+            color: var(--dark);
+            overflow: hidden;
+        }
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .hero h1 {
+            font-size: clamp(5rem, 6vw, 8rem);
+            font-weight: 500;
+            line-height: 0.8;
+        }
+
+        p {
+            font-size: clamp(1rem, 1.5vw, 1.35rem);
+            line-height: 1;
+        }
+
+        section {
+            position: relative;
+            width: 100%;
+            height: 100svh;
+            overflow: hidden;
+        }
+
+        .hero {
+            perspective: 1000px;
+            color: white;
+            background: var(--dark);
+            height: 100svh;
+        }
+
+        .background,
+        .hero-copy,
+        .window-container,
+        .hero-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            will-change: transform;
+        }
+
+        .background {
+            /* 高度将在JavaScript中动态设置 */
+            transform-origin: center center;
+        }
+
+        .background-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 105%;
+            background: var(--starry-sky-color);
+            /* 纯黑色背景 */
+            opacity: 0;
+            /* 初始完全透明 */
+            pointer-events: none;
+            z-index: 1;
+            will-change: transform;
+        }
+
+        .hero-copy {
+            z-index: 2;
+            color: var(--orange-light);
+            height: 100svh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: clamp(1.5rem, 4vw, 4rem);
+            opacity: 0;
+        }
+
+        .hero-copy h1 {
+            width: 85%;
+            line-height: 1.8;
+            font-size: clamp(1.2rem, 2vw, 2rem);
+            white-space: pre-wrap;
+        }
+
+        .hero-copy .char {
+            display: inline-block;
+            opacity: 0.15;
+            transform: translateY(40px);
+        }
+
+        .hero-copy .char.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .window-container {
+            height: 100svh;
+            transform-origin: center center;
+            z-index: 5;
+        }
+
+        .hero-header {
+            height: 100svh;
+            padding: clamp(1rem, 3vw, 2rem);
+            display: flex;
+            transform-style: preserve-3d;
+            top: 0;
+            left: 0;
+            z-index: 10;
+        }
+
+        .hero-header .col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hero-header .col p {
+            width: 50%;
+        }
+
+        .hero-header .col:nth-child(1) {
+            justify-content: space-between;
+        }
+
+        .hero-header .col:nth-child(2) {
+            justify-content: flex-end;
+            align-items: flex-end;
+            text-align: right;
+        }
+
+        .hero-header .col:nth-child(1) p {
+            align-self: flex-start;
+            text-align: left;
+            margin-top: clamp(1rem, 2vw, 2rem);
+            margin-left: clamp(1rem, 2vw, 2rem);
+        }
+
+        @media (max-width: 1000px) {
+            .hero h1 {
+                font-size: clamp(2rem, 5vw, 3rem);
+            }
+
+            .hero p {
+                font-size: clamp(0.9rem, 1.2vw, 1.125rem);
+            }
+
+            .sticky-card .card {
+                width: calc(100% - clamp(2rem, 5vw, 4rem));
+                height: 75%;
+                flex-direction: column;
+            }
+
+            .card .item {
+                width: 100%;
+            }
+        }
+
+        .sticky-card h1 {
+            text-transform: uppercase;
+            font-size: clamp(2.5rem, 6vw, 6rem);
+            font-weight: 1000;
+            line-height: 1;
+        }
+
+        .sticky-card .card p {
+            text-transform: uppercase;
+            font-size: clamp(1rem, 2vw, 2rem);
+        }
+
+        .sticky-card {
+            background-color: var(--starry-sky-color);
+            perspective: 850px;
+        }
+
+        .sticky-card .card {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 65%;
+            height: 60%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: clamp(0.5rem, 1.5vw, 1rem);
+            padding: clamp(1.5rem, 3vw, 2.5rem);
+            border-radius: clamp(0.5rem, 1.5vw, 1rem);
+            transform-origin: center bottom;
+            will-change: transform;
+        }
+
+        .card .item {
+            flex: 1;
+            height: 100%;
+        }
+
+        .card .item:nth-child(1) {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: clamp(0.25rem, 0.5vw, 0.5rem);
+        }
+
+        .card .item:nth-child(2) {
+            border-radius: clamp(0.5rem, 1vw, 0.75rem);
+            overflow: hidden;
+        }
+
+        .card#card-1 {
+            background-color: var(--card-color-1);
+            z-index: 7;
+            color: var(--card-color-2);
+        }
+
+        .card#card-2 {
+            background-color: var(--card-color-2);
+            z-index: 6;
+            color: var(--card-color-1);
+        }
+
+        .card#card-3 {
+            background-color: var(--card-color-1);
+            z-index: 5;
+            color: var(--card-color-2);
+        }
+
+        .card#card-4 {
+            background-color: var(--card-color-2);
+            z-index: 4;
+            color: var(--card-color-1);
+        }
+
+        .card#card-5 {
+            background-color: var(--card-color-1);
+            z-index: 3;
+            color: var(--card-color-2);
+        }
+
+        .card#card-6 {
+            background-color: var(--card-color-2);
+            z-index: 2;
+            color: var(--card-color-1);
+        }
+
+        .sticky-card .icon {
+            gap: 1rem;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            display: inline-block;
+            width: clamp(10rem, 28vw, 25rem);
+            height: clamp(10rem, 28vw, 25rem);
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .section-title {
+            font-size: clamp(1.5rem, 4vw, 2.8rem);
+            text-align: center;
+            background-color: var(--starry-sky-color);
+            color: var(--orange-dark);
+        }
+
+        .section-title h2 {
+            color: linear-gradient(135deg, var(--orange-light), var(--orange-primary));
+        }
+
+        .section-title .icon {
+            display: inline-block;
+            width: clamp(32px, 5vw, 48px);
+            height: clamp(32px, 5vw, 48px);
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        
+        .icon-lg {
+            width: clamp(24px, 4vw, 32px);
+            height: clamp(24px, 4vw, 32px);
+        }
+
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--starry-sky-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-content {
+            text-align: center;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .loader-squirrel {
+            width: clamp(50px, 10vw, 80px);
+            height: clamp(50px, 10vw, 80px);
+            animation: bounce 0.5s ease-in-out infinite;
+            filter: drop-shadow(0 0 15px rgba(255, 140, 0, 0.6));
+        }
+
+        .loader-text {
+            margin-top: clamp(10px, 3vw, 20px);
+            color: var(--orange-primary);
+            font-size: clamp(0.9rem, 1.5vw, 1.2rem);
+        }
+
+        .loader-bar {
+            width: clamp(120px, 30vw, 200px);
+            height: 4px;
+            background: var(--dark);
+            border-radius: 2px;
+            margin-top: clamp(10px, 3vw, 20px);
+            overflow: hidden;
+        }
+
+        .loader-bar::after {
+            content: '';
+            display: block;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--orange-primary), var(--orange-glow));
+            animation: loading 1s ease-in-out infinite;
+        }
+
+        @keyframes loading {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(300%); }
+        }
+
+        .footer {
+            height: 100vh;
+            background: var(--dark);
+            padding: clamp(30px, 8vw, 80px) clamp(20px, 5vw, 50px) clamp(20px, 5vw, 40px);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            box-sizing: border-box;
+            flex-direction: column;
+            justify-content: flex-end; 
+        }
+
+        .bottom-group {
+            width: 100%;
+        }
+
+        .footer-bottom, .footer-brand,
+        .footer-content, .footer-links,
+        .footer-logo, .footer-title {
+            box-sizing: border-box;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: clamp(20px, 5vw, 60px);
+            margin-bottom: clamp(20px, 5vw, 60px);
+        }
+
+        .footer-brand {
+            max-width: clamp(250px, 30vw, 350px);
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: clamp(8px, 1.5vw, 12px);
+            font-family: var(--font-primary);
+            font-size: clamp(1.2rem, 2vw, 1.8rem);
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--orange-light), var(--orange-primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: clamp(10px, 2vw, 20px);
+        }
+
+        .footer-logo img {
+            width: clamp(24px, 4vw, 36px);
+            height: clamp(24px, 4vw, 36px);
+            object-fit: contain;
+            filter: drop-shadow(0 0 10px rgba(255, 140, 0, 0.5));
+        }
+
+        .footer-brand p {
+            color: var(--text-dim);
+            line-height: 1.8;
+        }
+
+        .footer-title {
+            color: var(--text-light);
+            font-size: clamp(0.9rem, 1.2vw, 1.1rem);
+            margin-bottom: clamp(15px, 2.5vw, 25px);
+            font-weight: 600;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: clamp(8px, 1.2vw, 12px);
+        }
+
+        .footer-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            transition: color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .footer-links a:hover {
+            color: var(--orange-primary);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: clamp(20px, 4vw, 40px);
+            border-top: 1px solid rgba(255, 140, 0, 0.1);
+        }
+
+        .footer-bottom p {
+            color: var(--text-dim);
+            font-size: clamp(0.75rem, 1vw, 0.9rem);
+        }
+
+        .footer-bottom .squirrel {
+            font-size: clamp(1rem, 1.5vw, 1.5rem);
+            margin: 0 clamp(5px, 1vw, 10px);
+            display: inline-block;
+            animation: bounce 1s ease-in-out infinite;
+        }
+
+        @media (max-width: 1024px) {
+            .footer-content {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .device-not-supported {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: var(--dark);
+            color: var(--orange-primary);
+            justify-content: center;
+            align-items: center;
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            text-align: center;
+            padding: 2rem;
+            z-index: 99999;
+        }
+
+        @media (max-width: 65rem), (max-height: 40rem) {
+            body > *:not(.device-not-supported) {
+                display: none !important;
+            }
+            .device-not-supported {
+                display: flex;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+            .char {
+                opacity: 1 !important;
+                transform: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loader" id="loader">
+        <div class="loader-content">
+            <img src="logo.png" alt="松鼠星球 Logo" class="loader-squirrel">
+            <div class="loader-text">正在建立量子纠缠链接...</div>
+            <div class="loader-bar"></div>
+        </div>
+    </div>
+    <section class="hero">
+        <div class="background">
+            <img src="background.png" alt="星空背景" />
+        </div>
+        <div class="background-overlay"></div>
+        <div class="hero-copy" id="heroCopy">
+            <h1 id="introText"></h1>
+        </div>
+        <div class="window-container">
+            <img src="window.png" alt="窗户图形" />
+        </div>
+        <div class="hero-header">
+            <div class="col">
+                <h1>太好了</h1>
+                <p>向下滑动↓</p>
+            </div>
+            <div class="col">
+                <h1>我们到了!</h1>
+            </div>
+        </div>
+    </section>
+
+    <style>
+        .welcome-section {
+            min-height: 100vh;
+            background: var(--starry-sky-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            padding: 2rem;
+        }
+
+        .welcome-section .logo-bg {
+            display: none;
+        }
+
+        .welcome-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 90%;
+            max-width: 1200px;
+            position: relative;
+            z-index: 1;
+            gap: 60px;
+        }
+
+        .welcome-text {
+            flex: 1;
+        }
+
+        .welcome-text h1 {
+            font-size: clamp(2.5rem, 5vw, 4.5rem);
+            font-weight: 800;
+            color: #FFA500;
+            letter-spacing: 2px;
+            margin-bottom: 1.5rem;
+        }
+
+        .welcome-text p {
+            font-size: 20px;
+            font-weight: 100;
+            color: #ffcc5f;
+        }
+
+        .welcome-code {
+            flex: 1;
+            max-width: 500px;
+        }
+
+        .code-box {
+            background: linear-gradient(145deg, #0d0d0d, #1a1a1a);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 
+                0 10px 40px rgba(255, 165, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            border: 3px solid #FFA500;
+        }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .code-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+        }
+
+        .code-title {
+            color: #FFA500;
+            font-size: 0.9rem;
+            margin-right: auto;
+            font-family: monospace;
+        }
+
+        .code-box pre {
+            margin: 0;
+            overflow-x: auto;
+        }
+
+        .code-box code {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 1rem;
+            line-height: 1.8;
+            color: #FFB733;
+        }
+
+        .keyword { color: #D8B4FE; }
+        .string { color: #86EFAC; }
+        .function { color: #93C5FD; }
+        .comment { color: #6B7280; }
+
+        @media (max-width: 900px) {
+            .welcome-container {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .welcome-code {
+                width: 100%;
+                max-width: none;
+            }
+        }
+    </style>
+
+    <section class="welcome-section">
+        <div class="welcome-container">
+            <div class="welcome-text">
+                <h1>欢迎来到松鼠星球</h1><p>
+                在银河系的第三悬臂边缘，漂浮着一枚形似松鼠的迷幻图腾<br>
+                这里正是「代码囤积者」的终极巢穴</p>
+            </div>
+            <div class="welcome-code">
+                <div class="code-box">
+                    <div class="code-header">
+                        <span class="code-title">squirrel.js</span>
+                    </div>
+                    <pre><code><span class="comment">// 欢迎来到松鼠星球!</span>
+<span class="keyword">const</span> squirrel = {
+  <span class="string">name</span>: <span class="string">"松鼠"</span>,
+  <span class="string">planet</span>: <span class="string">"松鼠星球"</span>,
+  <span class="string">status</span>: <span class="string">"热情欢迎"</span>,
+  <span class="string">nuts</span>: <span class="keyword">Infinity</span>
+};
+
+<span class="function">welcome</span>(squirrel);</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <h2 class="section-title">
+            <svg class="icon icon-lg" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+            核心理念
+    </h2>
+    <section class="sticky-card">
+        <b>
+            <div class="card" id="card-1">
+                <div class="item">
+                    <p>我们不做无聊的东西。每一个项目都充满创意和想象力，从不按套路出牌，永远给你惊喜。</p>
+                    <h1>奇奇怪怪</h1>
+                </div>
+                <div class="item">
+                    <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+                </div>
+            </div>
+            <div class="card" id="card-2">
+                <div class="item">
+                    <p>创意不等于花哨。我们确保每一个“奇怪”的想法都能解决实际问题，让世界变得更好。</p>
+                    <h1>有用处</h1>
+                </div>
+                <div class="item">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+                </div>
+            </div>
+            <div class="card" id="card-3">
+                <div class="item">
+                    <p>想法再好，不实现等于零。我们用扎实的代码能力，将天马行空变成可用的产品。</p>
+                    <h1>制作与实现</h1>
+                </div>
+                <div class="item">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+            </div>
+            <div class="card" id="card-4">
+                <div class="item">
+                    <p>我们相信技术可以改变世界。每一次代码提交，都是向着梦想迈进的一小步。</p>
+                    <h1>追逐梦想</h1>
+                </div>
+                <div class="item">
+                    <svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+            </div>
+            <div class="card" id="card-5">
+                <div class="item">
+                    <p>知识属于所有人。我们积极参与开源社区，让创意自由流动，让代码创造价值。</p>
+                    <h1>开源共享</h1>
+                </div>
+                <div class="item">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+            </div>
+            <div class="card" id="card-6">
+                <div class="item">
+                    <p>编程应该是快乐的。我们享受创造的乐趣，也希望我们的作品能给用户带来快乐。</p>
+                    <h1>快乐编码</h1>
+                </div>
+                <div class="item">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+            </div>
+        </b>
+    </section>
+    <footer class="footer">
+        <div class="bottom-group">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <img src="logo.png" alt="松鼠星球 Logo">
+                        <span>松鼠星球</span>
+                    </div>
+                    <p>
+                        代码与艺术缠绕的魔法秘境。我们是代码囤积者，我们用代码实现梦想。
+                        写奇奇怪怪但有用的东西，让世界变得更有趣！
+                    </p>
+                </div>
+                <div>
+                    <h4 class="footer-title">快速链接</h4>
+                    <ul class="footer-links">
+                        <li><a href="story.html">星球故事</a></li>
+                        <li><a href="#philosophy">核心理念</a></li>
+                        <li><a href="#projects">项目展示</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="footer-title">创意</h4>
+                    <ul class="footer-links">
+                        <li><a href="tanex_script/tanex-script.html">Tanex Script</a></li>
+                        <li><a href="new_bee_lang/new_bee_lang.html">New Bee Lang</a></li>
+                        <li><a href="games/games.html">游戏</a></li>
+                        <li><a href="story.html">故事</a></li>
+                        <li><a href="check-in/check-in.html">签到</a></li>
+                        <li><a href="#login">登陆星球</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="footer-title">联系</h4>
+                    <ul class="footer-links">
+                        <li><a href="https://song-shu.infinityfree.me">GitHub</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>
+                    &copy;
+                    <script>document.write(new Date().getFullYear())</script> 松鼠星球 | 用代码编织梦想，用创意点亮星空
+                </p>
+            </div>
+        </div>
+    </footer>
+    <div class="device-not-supported">本设备不支持</div>
+    <script src="https://unpkg.com/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://unpkg.com/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.js"></script>
+    <script>
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('loader').classList.add('hidden');
+            }, 1500);
+        });
+    </script>
+    <script>
+        // 为"向下滑动↓"提示文字添加上下移动的动画效果
+        document.addEventListener("DOMContentLoaded", () => {
+            const scrollHint = document.querySelector('.hero-header .col p');
+            if (scrollHint) {
+                gsap.to(scrollHint, {
+                    y: 10,  // 向下移动10像素
+                    duration: 0.8,  // 增加速度，减少持续时间
+                    yoyo: true,  // 往返运动
+                    repeat: -1,  // 无限重复
+                    ease: "sine.inOut",  // 平滑的缓动效果
+                });
+            }
+        });
+    </script>
+        <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            gsap.registerPlugin(ScrollTrigger);
+            const lenis = new Lenis();
+            gsap.ticker.add((time) => { lenis.raf(time * 1000); });
+            gsap.ticker.lagSmoothing(0);
+
+            const windowContainer = document.querySelector(".window-container");
+            const skyContainer = document.querySelector(".background");
+            const heroCopy = document.querySelector(".hero-copy");
+            const heroHeader = document.querySelector(".hero-header");
+
+            const baseHeight = window.innerHeight;
+            skyContainer.style.height = `${baseHeight * 3}px`;
+            const skyContainerHeight = baseHeight * 1.2;
+            const skyMoveDistance = skyContainerHeight - baseHeight;
+
+            gsap.set(heroCopy, { yPercent: 0, opacity: 0 });
+            ScrollTrigger.create({
+                trigger: ".hero",
+                start: "top top",
+                end: `+=${window.innerHeight * 7}`,
+                pin: true,
+                pinSpacing: true,
+                scrub: 1,
+                onUpdate: (self) => {
+                    const progress = self.progress;
+                    let windowScale = 1 + progress * 3.5;
+                    gsap.set(windowContainer, { scale: windowScale, opacity: 1, y: progress * 500 });
+                    gsap.set(heroHeader, { scale: 1 + progress * 4, z: progress * 400, opacity: 1 });
+                    gsap.set(skyContainer, { y: -progress * skyMoveDistance });
+                    gsap.set(document.querySelector('.background-overlay'), { opacity: progress * 1.5 });
+
+                    if (progress > 0.67) {
+                        const fadeProgress = Math.min(1, (progress - 0.67) / 0.1);
+                        gsap.set(heroCopy, { opacity: fadeProgress });
+                    } else {
+                        gsap.set(heroCopy, { opacity: 0 });
+                    }
+                },
+            });
+        });
+        </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const cards = document.querySelectorAll(
+                ".sticky-card .card"),
+                totalCards = cards.length,
+                segmentSize = 1 / totalCards,
+                cardYOffset = 5,
+                cardScaleStep = 0.075;
+            cards.forEach((card, i) => {
+                gsap.set(card, {
+                    xPercent: -50,
+                    yPercent: -50 + i * cardYOffset,
+                    scale: 1 - i * cardScaleStep,
+                });
+            });
+            ScrollTrigger.create({
+                trigger: ".sticky-card",
+                start: "top top",
+                end: `+=${window.innerHeight * 8}px`,
+                pin: true,
+                pinSpacing: true,
+                scrub: 1,
+                onUpdate: self => {
+                    const progress = self.progress,
+                        acriveIndex = Math.min(
+                            Math.floor(progress / segmentSize),
+                            totalCards - 1
+                        ),
+                        segProgress = (progress - acriveIndex * segmentSize) / segmentSize;
+                    cards.forEach((card, i) => {
+                        if (i < acriveIndex) {
+                            gsap.set(card, {
+                                yPercent: -250,
+                                rotationX: 35
+                            });
+                        } else if (i === acriveIndex) {
+                            gsap.set(
+                                card, {
+                                yPercent: gsap.utils.interpolate(
+                                    -50,
+                                    -200,
+                                    segProgress
+                                ),
+                                rotationX: gsap.utils.interpolate(
+                                    0,
+                                    35,
+                                    segProgress
+                                ),
+                                scale: 1
+                            }
+                            );
+                        } else {
+                            const behindIndex = i - acriveIndex,
+                                currentYOffset = (behindIndex - segProgress) * cardYOffset,
+                                currentScale = 1 - (behindIndex - segProgress) * cardScaleStep;
+                            gsap.set(card, {
+                                yPercent: -50 + currentYOffset,
+                                rotationX: 0,
+                                scale: currentScale
+                            });
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+    <script>
+        const introText = document.getElementById('introText');
+        const textContent = "在银河系第三旋臂的幽暗边缘，星云如液态霓虹缓缓流淌，一片被数据潮汐反复冲刷的星域深处，悬浮着一枚巨大而诡谲的图腾。\n它轮廓酷似松鼠，却由流光、量子纹路与错乱代码交织而成，在虚空中微微震颤，散发出迷幻而危险的信号。\n这里没有常规星球的地壳与山峦，只有无尽堆叠的程序、封存的算法、被遗忘的指令与疯狂生长的数据流。\n每一道光痕都是一行代码，每一次脉动都是一次编译。\n这是「代码囤积者」的终极巢穴，是所有数据流浪者心照不宣的禁地，也是无数程序传说的起源地。\n踏入此地，便知——这里是松鼠星球。 \n";
+        introText.innerHTML = '';
+        const chars = [];
+        for (let i = 0; i < textContent.length; i++) {
+            if (textContent[i] === '\n') {
+                const br = document.createElement('br');
+                introText.appendChild(br);
+                continue;
+            }
+            const span = document.createElement('span');
+            span.className = 'char';
+            span.textContent = textContent[i];
+            gsap.set(span, { opacity: 0.15, y: 40 });
+            introText.appendChild(span);
+            chars.push(span);
+        }
+
+        function updateChars(progress) {
+            const visibleCount = Math.floor(chars.length * progress);
+            chars.forEach((char, index) => {
+                if (index < visibleCount) {
+                    if (!char.classList.contains('visible')) {
+                        char.classList.add('visible');
+                        gsap.to(char, {
+                            opacity: 1,
+                            y: 0,
+                            duration: 0.8,
+                            ease: 'power3.out'
+                        });
+                    }
+                } else {
+                    if (char.classList.contains('visible')) {
+                        char.classList.remove('visible');
+                        gsap.to(char, {
+                            opacity: 0.15,
+                            y: 40,
+                            duration: 0.8,
+                            ease: 'power2.in'
+                        });
+                    }
+                }
+            });
+        }
+
+        gsap.set(heroCopy, { opacity: 0 });
+        ScrollTrigger.create({
+            trigger: ".hero",
+            start: "top top",
+            end: "+=650%",
+            scrub: 0.5,
+            onUpdate: (self) => {
+                const charProgress = Math.max(0, Math.min(1, (self.progress - 0.77) / 0.23));
+                updateChars(charProgress);
+            }
+        });
+
+        updateChars(0);
+    </script>
+</body>
+
+</html>
