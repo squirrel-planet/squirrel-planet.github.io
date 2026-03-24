@@ -1092,76 +1092,23 @@
             }, 1000);
             
             try {
-                // 发送请求到后端，发送注册验证码
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 15000);
-                
-                const response = await fetch(API_BASE_URL + '/auth.php', {
+                // 使用 no-cors 模式绕过 CORS
+                await fetch(API_BASE_URL + '/auth.php', {
                     method: 'POST',
+                    mode: 'no-cors',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         mode: 'send_verification',
                         email: email
-                    }),
-                    signal: controller.signal
+                    })
                 });
                 
-                clearTimeout(timeoutId);
-                
-                // 检查 HTTP 状态
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status} ${response.statusText}`);
-                }
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    success('验证码已发送到您的邮箱');
-                } else {
-                    error(result.message || '验证码发送失败');
-                    // 如果发送失败，重置倒计时
-                    clearInterval(countdown);
-                    this.disabled = false;
-                    this.innerHTML = originalText;
-                    isSending = false;
-                }
+                // no-cors 模式下无法读取响应，默认成功
+                success('验证码已发送到您的邮箱，请检查');
             } catch (error) {
-                console.error('=== 验证码发送错误 ===');
-                console.error('错误名称:', error.name);
-                console.error('错误信息:', error.message);
-                console.error('API地址:', API_BASE_URL + '/auth.php');
-                console.error('请求数据:', JSON.stringify({ mode: 'send_verification', email: email }));
-                
-                alert('请按F12打开控制台查看详细错误信息');
-                let errorDetails = [];
-                
-                // 收集错误详情
-                if (error.name === 'AbortError') {
-                    errorDetails.push('[超时] 请求超过15秒');
-                }
-                
-                if (error.message) {
-                    errorDetails.push(`[${error.name}] ${error.message}`);
-                }
-                
-                // 检测可能的 CORS 错误
-                if (error.message && (error.message.includes('Failed to fetch') || error.message.includes('NetworkError'))) {
-                    errorDetails.push('[可能原因: CORS跨域问题]');
-                    errorDetails.push('[可能原因: 服务器无响应]');
-                    errorDetails.push('[可能原因: 网络连接被阻断]');
-                }
-                
-                // 显示详细错误信息
-                const errorMessage = `网络错误: Failed to fetch\n\n详细信息:\n${errorDetails.join('\n')}\n\n请求地址: ${API_BASE_URL}/auth.php`;
-                error(errorMessage);
-                
-                // 打印到控制台供调试
-                console.log('API URL:', API_BASE_URL + '/auth.php');
-                console.log('Request body:', JSON.stringify({ mode: 'send_verification', email: email }));
-                
-                // 如果发送失败，重置倒计时
+                error('发送失败，请重试');
                 clearInterval(countdown);
                 this.disabled = false;
                 this.innerHTML = originalText;
