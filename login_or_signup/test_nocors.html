@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>No-CORS 测试</title>
+</head>
+<body>
+    <h2>No-CORS 模式测试</h2>
+    <button onclick="testNoCors()">测试发送验证码</button>
+    <pre id="out" style="background:#eee;padding:10px;white-space:pre-wrap;"></pre>
+    
+    <script>
+    function log(msg) {
+        document.getElementById('out').textContent = msg;
+    }
+    
+    async function testNoCors() {
+        log('测试中...');
+        
+        // no-cors 模式下，请求会发送但无法读取响应
+        // 只能通过其他方式确认成功
+        const url = 'https://song-shu.infinityfree.me/backend/auth.php';
+        
+        try {
+            await fetch(url, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    mode: 'send_verification',
+                    email: '2477872205@qq.com'
+                })
+            });
+            
+            // no-cors 不会抛出错误，但 response.type 是 'opaque'
+            log('请求已发送（opaque response）- 邮件应该已发送，请检查邮箱');
+            
+        } catch(e) {
+            log('失败: ' + e.message);
+        }
+    }
+    </script>
+</body>
+</html>
