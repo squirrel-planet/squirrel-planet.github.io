@@ -1128,7 +1128,13 @@
                     isSending = false;
                 }
             } catch (error) {
-                console.error('验证码发送错误:', error);
+                console.error('=== 验证码发送错误 ===');
+                console.error('错误名称:', error.name);
+                console.error('错误信息:', error.message);
+                console.error('API地址:', API_BASE_URL + '/auth.php');
+                console.error('请求数据:', JSON.stringify({ mode: 'send_verification', email: email }));
+                
+                alert('请按F12打开控制台查看详细错误信息');
                 let errorDetails = [];
                 
                 // 收集错误详情
