@@ -699,14 +699,7 @@
         }
 
         // 测试 CORS 连接
-        (async function() {
-            try {
-                const res = await fetch(API_BASE_URL + '/test.php');
-                console.log('CORS 测试结果:', res.status, await res.text());
-            } catch(e) {
-                console.error('CORS 测试失败:', e);
-            }
-        })();
+        // 如果 CORS 不可用，使用 fallback
 
         // 自定义弹窗函数
         function showModal(type, title, message, callback) {
