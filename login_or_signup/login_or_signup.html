@@ -673,18 +673,33 @@
         // 后端 API 地址（前后端分离部署）
         const API_BASE_URL = 'https://song-shu.infinityfree.me/backend';
 
-        // fetch 请求函数 (带CORS)
+        // fetch 请求函数 (带CORS和调试)
         async function jsonpRequest(url, params) {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(params),
-                mode: 'cors'
-            });
-            return await response.json();
+            console.log('=== fetch请求 ===');
+            console.log('URL:', url);
+            console.log(' params:', params);
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(params),
+                    mode: 'cors'
+                });
+                
+                console.log('响应状态:', response.status);
+                console.log('响应头:', [...response.headers.entries()]);
+                
+                const data = await response.json();
+                console.log('响应数据:', data);
+                return data;
+            } catch (error) {
+                console.error('fetch错误:', error);
+                throw error;
+            }
         }
 
         // 测试 CORS 连接
