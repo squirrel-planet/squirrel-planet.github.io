@@ -673,14 +673,11 @@
         // 后端 API 地址（前后端分离部署）
         const API_BASE_URL = '/backend';
 
-        // JSONP 请求函数 - 增加调试
+        // JSONP 请求函数
         function jsonpRequest(url, params) {
             return new Promise((resolve, reject) => {
                 const callback = 'cb_' + Date.now() + Math.random().toString(36).substr(2, 9);
                 const script = document.createElement('script');
-                
-                console.log('JSONP 请求:', url, params);
-                
                 const timeout = setTimeout(() => {
                     reject(new Error('请求超时'));
                     document.head.removeChild(script);
@@ -688,21 +685,15 @@
                 }, 10000);
                 
                 window[callback] = (data) => {
-                    console.log('JSONP 响应:', data);
                     clearTimeout(timeout);
                     resolve(data);
                     document.head.removeChild(script);
                     delete window[callback];
                 };
                 
-                script.onerror = (e) => {
-                    console.error('JSONP 加载失败:', e);
-                    reject(new Error('网络错误'));
-                };
-                
                 const query = new URLSearchParams(params).toString();
                 script.src = url + '?callback=' + callback + (query ? '&' + query : '');
-                console.log('JSONP URL:', script.src);
+                script.onerror = () => reject(new Error('网络错误'));
                 document.head.appendChild(script);
             });
         }
@@ -1550,18 +1541,6 @@
         function isValidEmail(email) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             return emailRegex.test(email);
-        }
-        
-        // 测试按钮
-        document.body.insertAdjacentHTML('beforeend', '<button style="position:fixed;bottom:10px;right:10px;z-index:9999;padding:10px;background:#f00;color:#fff;border:none;cursor:pointer" onclick="testJsonp()">测试JSONP</button>');
-        
-        async function testJsonp() {
-            try {
-                const result = await jsonpRequest(API_BASE_URL + '/auth.php', {});
-                alert('成功: ' + JSON.stringify(result));
-            } catch(e) {
-                alert('失败: ' + e.message);
-            }
         }
     </script>
 </body>
