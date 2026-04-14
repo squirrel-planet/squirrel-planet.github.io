@@ -788,8 +788,8 @@
             const hashedPassword = await hashPassword(password);
             
             try {
-                // 使用 JSONP 方式请求
-                const result = await jsonpRequest(API_BASE_URL + '/auth.php', {
+                // 使用 JSONP 方式请求 测试端点
+                const result = await jsonpRequest(API_BASE_URL + '/auth_min.php', {
                     mode: 'login',
                     name: username,
                     pass: hashedPassword
