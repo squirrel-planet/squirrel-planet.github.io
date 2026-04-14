@@ -673,33 +673,21 @@
         // 后端 API 地址（前后端分离部署）
         const API_BASE_URL = 'https://song-shu.infinityfree.me/backend';
 
-        // JSONP 请求函数
-        function jsonpRequest(url, params) {
-            return new Promise((resolve, reject) => {
-                const callback = 'cb_' + Date.now() + Math.random().toString(36).substr(2, 9);
-                const script = document.createElement('script');
-                const timeout = setTimeout(() => {
-                    reject(new Error('请求超时'));
-                    document.head.removeChild(script);
-                    if (window[callback]) delete window[callback];
-                }, 10000);
-                
-                window[callback] = (data) => {
-                    clearTimeout(timeout);
-                    resolve(data);
-                    document.head.removeChild(script);
-                    delete window[callback];
-                };
-                
-                const query = new URLSearchParams(params).toString();
-                script.src = url + '?callback=' + callback + (query ? '&' + query : '');
-                script.onerror = () => reject(new Error('网络错误'));
-                document.head.appendChild(script);
+        // fetch 请求函数 (带CORS)
+        async function jsonpRequest(url, params) {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(params),
+                mode: 'cors'
             });
+            return await response.json();
         }
 
         // 测试 CORS 连接
-        // 如果 CORS 不可用，使用 fallback
 
         // 自定义弹窗函数
         function showModal(type, title, message, callback) {
