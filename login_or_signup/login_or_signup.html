@@ -671,7 +671,44 @@
 
     <script>
         // 后端 API 地址（前后端分离部署）
-        const API_BASE_URL = 'https://song-shu.infinityfree.me/backend';
+        const API_BASE_URL = '/backend';
+
+        // JSONP 请求函数 - 增加调试
+        function jsonpRequest(url, params) {
+            return new Promise((resolve, reject) => {
+                const callback = 'cb_' + Date.now() + Math.random().toString(36).substr(2, 9);
+                const script = document.createElement('script');
+                
+                console.log('JSONP 请求:', url, params);
+                
+                const timeout = setTimeout(() => {
+                    reject(new Error('请求超时'));
+                    document.head.removeChild(script);
+                    if (window[callback]) delete window[callback];
+                }, 10000);
+                
+                window[callback] = (data) => {
+                    console.log('JSONP 响应:', data);
+                    clearTimeout(timeout);
+                    resolve(data);
+                    document.head.removeChild(script);
+                    delete window[callback];
+                };
+                
+                script.onerror = (e) => {
+                    console.error('JSONP 加载失败:', e);
+                    reject(new Error('网络错误'));
+                };
+                
+                const query = new URLSearchParams(params).toString();
+                script.src = url + '?callback=' + callback + (query ? '&' + query : '');
+                console.log('JSONP URL:', script.src);
+                document.head.appendChild(script);
+            });
+        }
+
+        // 测试 CORS 连接
+        // 如果 CORS 不可用，使用 fallback
 
         // 自定义弹窗函数
         function showModal(type, title, message, callback) {
@@ -757,20 +794,12 @@
             const hashedPassword = await hashPassword(password);
             
             try {
-                // 发送请求到后端
-                const response = await fetch(API_BASE_URL + '/auth.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        mode: 'login',
-                        name: username,
-                        pass: hashedPassword
-                    })
+                // 使用 JSONP 方式请求
+                const result = await jsonpRequest(API_BASE_URL + '/auth.php', {
+                    mode: 'login',
+                    name: username,
+                    pass: hashedPassword
                 });
-                
-                const result = await response.json();
                 
                 if (result.success) {
                     // 登录成功处理
@@ -821,21 +850,13 @@
             
             try {
                 // 发送请求到后端，包含邮箱和验证码
-                const response = await fetch(API_BASE_URL + '/auth.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        mode: 'register',
-                        name: username,
-                        pass: hashedPassword,
-                        email: email,
-                        verification_code: verification  // 添加验证码验证
-                    })
+                const result = await jsonpRequest(API_BASE_URL + '/auth.php', {
+                    mode: 'register',
+                    name: username,
+                    pass: hashedPassword,
+                    email: email,
+                    verification_code: verification
                 });
-                
-                const result = await response.json();
                 
                 if (result.success) {
                     success('注册成功！');
@@ -929,19 +950,11 @@
             
             try {
                 // 发送请求到后端
-                const response = await fetch(API_BASE_URL + '/auth.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        mode: 'verify_code',
-                        email: email,
-                        code: code
-                    })
+                const result = await jsonpRequest(API_BASE_URL + '/auth.php', {
+                    mode: 'verify_code',
+                    email: email,
+                    code: code
                 });
-                
-                const result = await response.json();
                 
                 if (result.success) {
                     success('验证码验证成功！请设置新密码');
@@ -989,19 +1002,11 @@
             
             try {
                 // 发送请求到后端
-                const response = await fetch(API_BASE_URL + '/auth.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        mode: 'reset_password',
-                        temp_token: tempToken,
-                        new_password: hashedPassword
-                    })
+                const result = await jsonpRequest(API_BASE_URL + '/auth.php', {
+                    mode: 'reset_password',
+                    temp_token: tempToken,
+                    new_password: hashedPassword
                 });
-                
-                const result = await response.json();
                 
                 if (result.success) {
                     success('密码重置成功！请使用新密码登录');
@@ -1092,15 +1097,9 @@
             }, 1000);
             
             try {
-                // 使用 no-cors 模式 + form-urlencoded 绕过 CORS
-                const formData = new FormData();
-                formData.append('mode', 'send_verification');
-                formData.append('email', email);
-                
-                await fetch(API_BASE_URL + '/auth.php', {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: formData
+                const result = await jsonpRequest(API_BASE_URL + '/auth.php', {
+                    mode: 'send_verification',
+                    email: email
                 });
                 
                 success('验证码已发送到您的邮箱，请检查');
@@ -1117,25 +1116,13 @@
             testBtn.innerHTML = '测试中...';
             
             const currentUrl = window.location.href;
-            // 使用相对路径
-            const apiUrl = API_BASE_URL + '/auth.php';
+            const apiUrl = API_BASE_URL + '/test.php';
             
             alert('诊断信息：\n\n当前页面: ' + currentUrl + '\nAPI地址: ' + apiUrl);
             
             try {
-                // 测试 ping 接口
-                const response = await fetch(apiUrl + '?ping=1', {
-                    method: 'GET',
-                    mode: 'cors',
-                    signal: AbortSignal.timeout(10000)
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    alert('✅ 连接成功!\n\n服务器响应: ' + JSON.stringify(data, null, 2));
-                } else {
-                    alert('❌ 连接失败\n\nHTTP状态: ' + response.status + ' ' + response.statusText);
-                }
+                const result = await jsonpRequest(apiUrl, {});
+                alert('✅ 连接成功!\n\n服务器响应: ' + JSON.stringify(result));
             } catch (error) {
                 let errorInfo = '❌ 连接失败\n\n';
                 errorInfo += '错误: ' + error.message + '\n';
@@ -1563,6 +1550,18 @@
         function isValidEmail(email) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             return emailRegex.test(email);
+        }
+        
+        // 测试按钮
+        document.body.insertAdjacentHTML('beforeend', '<button style="position:fixed;bottom:10px;right:10px;z-index:9999;padding:10px;background:#f00;color:#fff;border:none;cursor:pointer" onclick="testJsonp()">测试JSONP</button>');
+        
+        async function testJsonp() {
+            try {
+                const result = await jsonpRequest(API_BASE_URL + '/auth.php', {});
+                alert('成功: ' + JSON.stringify(result));
+            } catch(e) {
+                alert('失败: ' + e.message);
+            }
         }
     </script>
 </body>
