@@ -673,21 +673,18 @@
         // 后端 API 地址
         const API_BASE_URL = 'https://song-shu.infinityfree.me/backend';
 
-        // 免费主机专用GET请求函数
-        async function jsonpRequest(url, params) {
-            console.log('GET请求:', url, params);
+        // 唯一能用的请求函数（免费主机专用）
+        async function jsonpRequest(params) {
+            // 拼接URL参数（纯GET，无任何请求头）
+            const url = `${API_BASE_URL}/auth_min.php?mode=${params.mode}&name=${params.name}&pass=${params.pass}`;
             
-            // 拼接参数到URL（GET请求）
-            const urlObj = new URL(url);
-            for (const key in params) {
-                urlObj.searchParams.append(key, params[key]);
-            }
+            console.log('请求:', url);
             
-            // 极简GET请求，无任何请求头 → 不触发预检！
-            const res = await fetch(urlObj.toString());
+            // 极简fetch：无method、无headers、无body → 绝对不触发预检！
+            const res = await fetch(url);
             const data = await res.json();
-            
-            console.log('响应:', data);
+
+            console.log("成功:", data);
             return data;
         }
 
@@ -776,7 +773,7 @@
             
             try {
                 // 使用 JSONP 方式请求 测试端点
-                const result = await jsonpRequest(API_BASE_URL + '/auth_min.php', {
+                const result = await jsonpRequest({
                     mode: 'login',
                     name: username,
                     pass: hashedPassword
