@@ -673,41 +673,22 @@
         // 后端 API 地址（前后端分离部署）
         const API_BASE_URL = 'https://song-shu.infinityfree.me/backend';
 
-        // JSONP 请求函数 (之前fetch有CORS问题)
-        function jsonpRequest(url, params) {
-            return new Promise((resolve, reject) => {
-                const callback = 'cb_' + Date.now() + Math.random().toString(36).substr(2, 9);
-                const script = document.createElement('script');
-                
-                console.log('JSONP请求:', url, params);
-                
-                const timeout = setTimeout(() => {
-                    reject(new Error('请求超时'));
-                    document.head.removeChild(script);
-                    if (window[callback]) delete window[callback];
-                }, 10000);
-                
-                window[callback] = (data) => {
-                    console.log('JSONP响应:', data);
-                    clearTimeout(timeout);
-                    resolve(data);
-                    document.head.removeChild(script);
-                    delete window[callback];
-                };
-                
-                script.onerror = (e) => {
-                    console.error('JSONP加载失败:', e);
-                    reject(new Error('网络错误'));
-                };
-                
-                const query = new URLSearchParams(params).toString();
-                script.src = url + '?callback=' + callback + (query ? '&' + query : '');
-                console.log('JSONP URL:', script.src);
-                document.head.appendChild(script);
+        // 标准Fetch请求函数（CORS方式）
+        async function jsonpRequest(url, params) {
+            console.log('Fetch请求:', url, params);
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(params)
             });
+            
+            const result = await response.json();
+            console.log('响应:', result);
+            return result;
         }
-
-        // 测试 CORS 连接
 
         // 自定义弹窗函数
         function showModal(type, title, message, callback) {
@@ -800,7 +781,7 @@
                     pass: hashedPassword
                 });
                 
-if (result.success) {
+if (result.status === 'success') {
                     // 登录成功处理
                     success('登录成功！', () => {
                         window.location.href = '../index.html';
@@ -810,7 +791,7 @@ if (result.success) {
                 }
             } catch (err) {
                 console.error('登录错误:', err);
-                error('网络错误，请稍后重试\n错误信息: ' + err.message);
+                alert('网络错误，请稍后重试');
             }
         });
 
@@ -857,7 +838,7 @@ if (result.success) {
                     verification_code: verification
                 });
                 
-                if (result.success) {
+                if (result.status === 'success') {
                     success('注册成功！');
                     // 切换到登录表单
                     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -873,9 +854,9 @@ if (result.success) {
                 } else {
                     error(result.message || '注册失败');
                 }
-            } catch (error) {
-                console.error('注册错误:', error);
-                error('网络错误，请稍后重试\n错误信息: ' + error.message);
+} catch (err) {
+                console.error('登录错误:', err);
+                alert('网络错误，请稍后重试');
             }
         });
 
@@ -910,7 +891,7 @@ if (result.success) {
                 
                 const result = await response.json();
                 
-                if (result.success) {
+                if (result.status === 'success') {
                     alert(result.message);
                     // 存储邮箱，用于下一步验证
                     currentEmail = email;
@@ -924,9 +905,9 @@ if (result.success) {
                 } else {
                     error(result.message || '发送失败');
                 }
-            } catch (error) {
+            } catch (err) {
                 console.error('忘记密码错误:', error);
-                error('网络错误，请稍后重试\n错误信息: ' + error.message);
+                alert('网络错误，请稍后重试');
             }
         });
 
@@ -955,7 +936,7 @@ if (result.success) {
                     code: code
                 });
                 
-                if (result.success) {
+                if (result.status === 'success') {
                     success('验证码验证成功！请设置新密码');
                     // 显示重置密码表单
                     document.querySelectorAll('.auth-form').forEach(form => {
@@ -967,9 +948,9 @@ if (result.success) {
                 } else {
                     error(result.message || '验证失败');
                 }
-            } catch (error) {
+            } catch (err) {
                 console.error('验证码验证错误:', error);
-                error('网络错误，请稍后重试\n错误信息: ' + error.message);
+                alert('网络错误，请稍后重试');
             }
         });
 
@@ -1007,7 +988,7 @@ if (result.success) {
                     new_password: hashedPassword
                 });
                 
-                if (result.success) {
+                if (result.status === 'success') {
                     success('密码重置成功！请使用新密码登录');
                     // 返回到登录页面
                     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -1023,9 +1004,9 @@ if (result.success) {
                 } else {
                     error(result.message || '重置失败');
                 }
-            } catch (error) {
+            } catch (err) {
                 console.error('重置密码错误:', error);
-                error('网络错误，请稍后重试\n错误信息: ' + error.message);
+                alert('网络错误，请稍后重试');
             }
         });
 
@@ -1122,7 +1103,7 @@ if (result.success) {
             try {
                 const result = await jsonpRequest(apiUrl, {});
                 alert('✅ 连接成功!\n\n服务器响应: ' + JSON.stringify(result));
-            } catch (error) {
+            } catch (err) {
                 let errorInfo = '❌ 连接失败\n\n';
                 errorInfo += '错误: ' + error.message + '\n';
                 errorInfo += '当前页面: ' + currentUrl + '\n';
