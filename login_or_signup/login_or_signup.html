@@ -670,24 +670,25 @@
     </div>
 
     <script>
-        // 后端 API 地址（前后端分离部署）
+        // 后端 API 地址
         const API_BASE_URL = 'https://song-shu.infinityfree.me/backend';
 
-        // 标准Fetch请求函数（CORS方式）
+        // 免费主机专用GET请求函数
         async function jsonpRequest(url, params) {
-            console.log('Fetch请求:', url, params);
+            console.log('GET请求:', url, params);
             
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(params)
-            });
+            // 拼接参数到URL（GET请求）
+            const urlObj = new URL(url);
+            for (const key in params) {
+                urlObj.searchParams.append(key, params[key]);
+            }
             
-            const result = await response.json();
-            console.log('响应:', result);
-            return result;
+            // 极简GET请求，无任何请求头 → 不触发预检！
+            const res = await fetch(urlObj.toString());
+            const data = await res.json();
+            
+            console.log('响应:', data);
+            return data;
         }
 
         // 自定义弹窗函数
