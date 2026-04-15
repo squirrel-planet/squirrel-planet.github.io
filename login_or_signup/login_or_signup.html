@@ -673,33 +673,38 @@
         // 后端 API 地址（前后端分离部署）
         const API_BASE_URL = 'https://song-shu.infinityfree.me/backend';
 
-        // fetch 请求函数 (带CORS和调试)
-        async function jsonpRequest(url, params) {
-            console.log('=== fetch请求 ===');
-            console.log('URL:', url);
-            console.log(' params:', params);
-            
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(params),
-                    mode: 'cors'
-                });
+        // JSONP 请求函数 (之前fetch有CORS问题)
+        function jsonpRequest(url, params) {
+            return new Promise((resolve, reject) => {
+                const callback = 'cb_' + Date.now() + Math.random().toString(36).substr(2, 9);
+                const script = document.createElement('script');
                 
-                console.log('响应状态:', response.status);
-                console.log('响应头:', [...response.headers.entries()]);
+                console.log('JSONP请求:', url, params);
                 
-                const data = await response.json();
-                console.log('响应数据:', data);
-                return data;
-            } catch (error) {
-                console.error('fetch错误:', error);
-                throw error;
-            }
+                const timeout = setTimeout(() => {
+                    reject(new Error('请求超时'));
+                    document.head.removeChild(script);
+                    if (window[callback]) delete window[callback];
+                }, 10000);
+                
+                window[callback] = (data) => {
+                    console.log('JSONP响应:', data);
+                    clearTimeout(timeout);
+                    resolve(data);
+                    document.head.removeChild(script);
+                    delete window[callback];
+                };
+                
+                script.onerror = (e) => {
+                    console.error('JSONP加载失败:', e);
+                    reject(new Error('网络错误'));
+                };
+                
+                const query = new URLSearchParams(params).toString();
+                script.src = url + '?callback=' + callback + (query ? '&' + query : '');
+                console.log('JSONP URL:', script.src);
+                document.head.appendChild(script);
+            });
         }
 
         // 测试 CORS 连接
