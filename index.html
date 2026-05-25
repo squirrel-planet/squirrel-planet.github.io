@@ -113,12 +113,12 @@
             backdrop-filter: blur(10px);
             transition: all 0.3s ease;
         }
-        
+
         .nav-left {
             display: flex;
             align-items: center;
         }
-        
+
         .nav-logo {
             display: flex;
             align-items: center;
@@ -151,7 +151,7 @@
             transform: scale(1.1);
             filter: drop-shadow(0 0 20px rgba(255, 140, 0, 0.8));
         }
-        
+
         .nav-right {
             display: flex;
             align-items: center;
@@ -938,7 +938,7 @@
             .footer-content {
                 grid-template-columns: 1fr 1fr;
             }
-            
+
             .philosophy-grid {
                 grid-template-columns: 1fr;
             }
@@ -1098,7 +1098,7 @@
             0% { transform: translateX(-100%); }
             100% { transform: translateX(300%); }
         }
-        
+
         /* Login Section */
         .login-section {
             background: linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-card) 100%);
@@ -1162,7 +1162,7 @@
             display: flex;
             gap: 15px;
         }
-        
+
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -1178,12 +1178,12 @@
             visibility: hidden;
             transition: all 0.3s ease;
         }
-        
+
         .modal-overlay.active {
             opacity: 1;
             visibility: visible;
         }
-        
+
         .modal-content {
             background: var(--bg-card);
             border-radius: 20px;
@@ -1196,11 +1196,11 @@
             transform: scale(0.7);
             transition: transform 0.3s ease;
         }
-        
+
         .modal-overlay.active .modal-content {
             transform: scale(1);
         }
-        
+
         .modal-header {
             padding: 25px 30px;
             display: flex;
@@ -1209,13 +1209,13 @@
             border-bottom: 1px solid rgba(255, 140, 0, 0.1);
             position: relative;
         }
-        
+
         .modal-header h2 {
             margin: 0;
             color: var(--text-light);
             font-size: 1.5rem;
         }
-        
+
         .close-btn {
             font-size: 1.8rem;
             cursor: pointer;
@@ -1227,15 +1227,15 @@
             align-items: center;
             justify-content: center;
         }
-        
+
         .close-btn:hover {
             color: var(--orange-primary);
         }
-        
+
         .modal-body {
             padding: 30px;
         }
-        
+
         .auth-toggle {
             display: flex;
             background: var(--bg-dark);
@@ -1243,7 +1243,7 @@
             padding: 5px;
             margin-bottom: 25px;
         }
-        
+
         .auth-option {
             flex: 1;
             text-align: center;
@@ -1254,24 +1254,24 @@
             font-weight: 500;
             color: var(--text-dim);
         }
-        
+
         .auth-option.active {
             background: linear-gradient(135deg, var(--orange-primary), var(--orange-dark));
             color: white;
             box-shadow: 0 5px 15px rgba(255, 140, 0, 0.3);
         }
-        
+
         .auth-form .form-group {
             margin-bottom: 20px;
         }
-        
+
         .auth-form label {
             display: block;
             margin-bottom: 8px;
             color: var(--text-light);
             font-weight: 500;
         }
-        
+
         .auth-form input {
             width: 100%;
             padding: 14px;
@@ -1282,18 +1282,18 @@
             font-size: 1rem;
             transition: all 0.3s ease;
         }
-        
+
         .auth-form input:focus {
             outline: none;
             border-color: var(--orange-primary);
             box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.2);
         }
-        
+
         .auth-form .btn {
             width: 100%;
             margin-top: 10px;
         }
-        
+
         .auth-message {
             margin-top: 20px;
             padding: 12px;
@@ -1301,38 +1301,38 @@
             text-align: center;
             display: none;
         }
-        
+
         .auth-message.success {
             background: rgba(0, 255, 157, 0.1);
             border: 1px solid rgba(0, 255, 157, 0.3);
             color: var(--code-green);
         }
-        
+
         .auth-message.error {
             background: rgba(236, 72, 153, 0.1);
             border: 1px solid rgba(236, 72, 153, 0.3);
             color: var(--accent-pink);
         }
-        
+
         .auth-message.show {
             display: block;
         }
-        
+
         /* 响应式设计 */
         @media (max-width: 768px) {
             .auth-buttons {
                 display: none; /* 在移动设备上隐藏认证按钮，将通过菜单访问 */
             }
-            
+
             .modal-content {
                 width: 95%;
                 margin: 0 20px;
             }
-            
+
             .modal-header {
                 padding: 20px;
             }
-            
+
             .modal-body {
                 padding: 20px;
             }
@@ -1587,7 +1587,7 @@
             </div>
         </div>
     </section>
-    
+
     <!-- Login Section -->
     <section class="login-section" id="login">
         <h2 class="section-title fade-in">
@@ -1642,7 +1642,7 @@
             <div>
                 <h4 class="footer-title">联系</h4>
                 <ul class="footer-links">
-                    <li><a href="https://song-shu.infinityfree.me">GitHub</a></li>
+                    <li><a href="https://songshu1hao.pythonanywhere.com">GitHub</a></li>
                 </ul>
             </div>
         </div>
@@ -1772,10 +1772,10 @@
                 btn.addEventListener('click', function(e) {
                     // 添加点击类以实现波纹效果
                     this.classList.add('clicked');
-                    
+
                     // 在点击位置创建粒子效果
                     createButtonParticles(e.clientX, e.clientY);
-                    
+
                     // 动画结束后移除类
                     setTimeout(() => {
                         this.classList.remove('clicked');
@@ -1803,12 +1803,12 @@
                     transition: all 0.5s ease-out;
                 `;
                 document.body.appendChild(particle);
-                
+
                 setTimeout(() => {
                     particle.style.transform = `translate(${(Math.random() - 0.5) * 200}px, ${(Math.random() - 0.5) * 200}px) rotate(${Math.random() * 360}deg)`;
                     particle.style.opacity = '0';
                 }, 10);
-                
+
                 setTimeout(() => {
                     particle.remove();
                 }, 500);
@@ -1822,7 +1822,7 @@
             setupLogoClick();
             setupParallax();
             setupButtonAnimations();
-            
+
             // 认证模态框功能
             setupAuthModal();
         });

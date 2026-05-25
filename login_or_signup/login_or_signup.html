@@ -670,22 +670,77 @@
     </div>
 
     <script>
-        // 后端 API 地址
-        const API_BASE_URL = 'https://song-shu.infinityfree.me/backend';
+        // 后端 API 地址，仅使用 PythonAnywhere 上的新主机
+        const API_HOSTS = [
+            'https://songshu1hao.pythonanywhere.com'
+        ];
+        const API_BASE_PATH = '/backend';
+        const API_BASE_URLS = API_HOSTS.map(host => host + API_BASE_PATH);
 
-        // 唯一能用的请求函数（免费主机专用）
-        async function jsonpRequest(params) {
-            // 拼接URL参数（纯GET，无任何请求头）
-            const url = `${API_BASE_URL}/auth_min.php?mode=${params.mode}&name=${params.name}&pass=${params.pass}`;
-            
-            console.log('请求:', url);
-            
-            // 极简fetch：无method、无headers、无body → 绝对不触发预检！
-            const res = await fetch(url);
-            const data = await res.json();
+        function buildApiUrl(relativePath, params = {}) {
+            const url = new URL(relativePath, API_BASE_URLS[0]);
+            if (params && Object.keys(params).length > 0) {
+                url.search = new URLSearchParams(params);
+            }
+            return url.toString();
+        }
 
-            console.log("成功:", data);
-            return data;
+        async function fetchWithFallback(relativePath, options = {}) {
+            let lastError;
+            for (const baseUrl of API_BASE_URLS) {
+                const url = new URL(relativePath, baseUrl).toString();
+                try {
+                    const res = await fetch(url, options);
+                    if (res.ok) {
+                        return res;
+                    }
+                    if (res.status === 404 || res.status >= 500) {
+                        lastError = new Error(`${res.status} ${res.statusText}: ${url}`);
+                        continue;
+                    }
+                    return res;
+                } catch (err) {
+                    lastError = err;
+                }
+            }
+            throw lastError || new Error(`请求失败：${relativePath}`);
+        }
+
+        async function jsonpRequest(pathOrParams, maybeParams) {
+            let relativePath = '/auth_min.php';
+            let params = {};
+
+            if (typeof pathOrParams === 'string') {
+                relativePath = pathOrParams;
+                params = maybeParams || {};
+            } else {
+                params = pathOrParams || {};
+            }
+
+            let lastError;
+            for (const baseUrl of API_BASE_URLS) {
+                const url = new URL(relativePath, baseUrl);
+                if (Object.keys(params).length > 0) {
+                    url.search = new URLSearchParams(params);
+                }
+
+                console.log('请求:', url.toString());
+
+                try {
+                    const res = await fetch(url.toString());
+                    if (res.ok) {
+                        return await res.json();
+                    }
+                    if (res.status === 404 || res.status >= 500) {
+                        lastError = new Error(`${res.status} ${res.statusText}: ${url}`);
+                        continue;
+                    }
+                    return await res.json();
+                } catch (err) {
+                    lastError = err;
+                }
+            }
+            throw lastError || new Error(`JSONP 请求失败：${relativePath}`);
         }
 
         // 自定义弹窗函数
@@ -741,15 +796,15 @@
                 document.querySelectorAll('.tab-btn').forEach(btn => {
                     btn.classList.remove('active');
                 });
-                
+
                 // 添加active类到当前按钮
                 button.classList.add('active');
-                
+
                 // 隐藏所有表单
                 document.querySelectorAll('.auth-form').forEach(form => {
                     form.classList.remove('active');
                 });
-                
+
                 // 显示对应表单
                 const tab = button.getAttribute('data-tab');
                 document.getElementById(`${tab}Form`).classList.add('active');
@@ -759,18 +814,18 @@
         // 登录表单提交事件
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+
             const username = document.getElementById('loginUsername').value;
             const password = document.getElementById('loginPassword').value;
-            
+
             if (!username || !password) {
                 warning('请填写用户名和密码');
                 return;
             }
-            
+
             // 使用SHA-256对密码进行加密
             const hashedPassword = await hashPassword(password);
-            
+
             try {
                 // 使用 JSONP 方式请求 测试端点
                 const result = await jsonpRequest({
@@ -778,7 +833,7 @@
                     name: username,
                     pass: hashedPassword
                 });
-                
+
 if (result.status === 'success') {
                     // 登录成功处理
                     success('登录成功！', () => {
@@ -796,46 +851,46 @@ if (result.status === 'success') {
         // 注册表单提交事件
         document.getElementById('registerForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+
             const username = document.getElementById('registerUsername').value;
             const password = document.getElementById('registerPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             const email = document.getElementById('email').value;
             const verification = document.getElementById('verification').value;
-            
+
             if (!username || !password || !confirmPassword || !email || !verification) {
                 warning('请填写所有字段');
                 return;
             }
-            
+
             if (password !== confirmPassword) {
                 warning('两次输入的密码不一致');
                 return;
             }
-            
+
             if (password.length < 6) {
                 warning('密码长度至少为6位');
                 return;
             }
-            
+
             if (!isValidEmail(email)) {
                 warning('邮箱格式不正确');
                 return;
             }
-            
+
             // 使用SHA-256对密码进行加密
             const hashedPassword = await hashPassword(password);
-            
+
             try {
                 // 发送请求到后端，包含邮箱和验证码
-                const result = await jsonpRequest(API_BASE_URL + '/auth.php', {
+                const result = await jsonpRequest('/auth.php', {
                     mode: 'register',
                     name: username,
                     pass: hashedPassword,
                     email: email,
                     verification_code: verification
                 });
-                
+
                 if (result.status === 'success') {
                     success('注册成功！');
                     // 切换到登录表单
@@ -843,7 +898,7 @@ if (result.status === 'success') {
                         btn.classList.remove('active');
                     });
                     document.querySelector('.tab-btn[data-tab="login"]').classList.add('active');
-                    
+
                     // 隐藏所有表单，显示登录表单
                     document.querySelectorAll('.auth-form').forEach(form => {
                         form.classList.remove('active');
@@ -861,22 +916,22 @@ if (result.status === 'success') {
         // 忘记密码表单提交事件
         document.getElementById('forgotPasswordForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+
             const email = document.getElementById('forgotEmail').value;
-            
+
             if (!email) {
                 warning('请填写邮箱');
                 return;
             }
-            
+
             if (!isValidEmail(email)) {
                 warning('邮箱格式不正确');
                 return;
             }
-            
+
             try {
                 // 发送请求到后端
-                const response = await fetch(API_BASE_URL + '/auth.php', {
+                const response = await fetchWithFallback('/auth.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -886,9 +941,9 @@ if (result.status === 'success') {
                         email: email
                     })
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.status === 'success') {
                     alert(result.message);
                     // 存储邮箱，用于下一步验证
@@ -912,28 +967,28 @@ if (result.status === 'success') {
         // 验证码验证表单提交事件
         document.getElementById('verifyCodeForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+
             const email = document.getElementById('verifyEmail').value;
             const code = document.getElementById('verificationCode').value;
-            
+
             if (!email || !code) {
                 warning('请填写邮箱和验证码');
                 return;
             }
-            
+
             if (!isValidEmail(email)) {
                 warning('邮箱格式不正确');
                 return;
             }
-            
+
             try {
                 // 发送请求到后端
-                const result = await jsonpRequest(API_BASE_URL + '/auth.php', {
+                const result = await jsonpRequest('/auth.php', {
                     mode: 'verify_code',
                     email: email,
                     code: code
                 });
-                
+
                 if (result.status === 'success') {
                     success('验证码验证成功！请设置新密码');
                     // 显示重置密码表单
@@ -955,37 +1010,37 @@ if (result.status === 'success') {
         // 重置密码表单提交事件
         document.getElementById('resetPasswordForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+
             const newPassword = document.getElementById('resetNewPassword').value;
             const confirmPassword = document.getElementById('resetConfirmPassword').value;
             const tempToken = document.getElementById('resetTempToken').value;
-            
+
             if (!newPassword || !confirmPassword || !tempToken) {
                 warning('请填写所有字段');
                 return;
             }
-            
+
             if (newPassword !== confirmPassword) {
                 warning('两次输入的密码不一致');
                 return;
             }
-            
+
             if (newPassword.length < 6) {
                 warning('密码长度至少为6位');
                 return;
             }
-            
+
             // 使用SHA-256对密码进行加密
             const hashedPassword = await hashPassword(newPassword);
-            
+
             try {
                 // 发送请求到后端
-                const result = await jsonpRequest(API_BASE_URL + '/auth.php', {
+                const result = await jsonpRequest('/auth.php', {
                     mode: 'reset_password',
                     temp_token: tempToken,
                     new_password: hashedPassword
                 });
-                
+
                 if (result.status === 'success') {
                     success('密码重置成功！请使用新密码登录');
                     // 返回到登录页面
@@ -993,7 +1048,7 @@ if (result.status === 'success') {
                         btn.classList.remove('active');
                     });
                     document.querySelector('.tab-btn[data-tab="login"]').classList.add('active');
-                    
+
                     // 隐藏所有表单，显示登录表单
                     document.querySelectorAll('.auth-form').forEach(form => {
                         form.classList.remove('active');
@@ -1013,7 +1068,7 @@ if (result.status === 'success') {
             const passwordField = document.getElementById('loginPassword');
             passwordField.select();
             document.execCommand('copy');
-            
+
             // 临时更改按钮文本
             const originalText = this.innerHTML;
             this.innerHTML = '✓';
@@ -1027,7 +1082,7 @@ if (result.status === 'success') {
             const passwordField = document.getElementById('registerPassword');
             passwordField.select();
             document.execCommand('copy');
-            
+
             // 临时更改按钮文本
             const originalText = this.innerHTML;
             this.innerHTML = '✓';
@@ -1043,29 +1098,29 @@ if (result.status === 'success') {
                 warning('请先填写邮箱');
                 return;
             }
-            
+
             if (!isValidEmail(email)) {
                 warning('邮箱格式不正确');
                 return;
             }
-            
+
             if (isSending) {
                 return; // 防止重复点击
             }
-            
+
             isSending = true;
             const originalText = this.innerHTML;
             let timeLeft = 60;
-            
+
             // 禁用按钮并开始倒计时
             this.disabled = true;
             this.innerHTML = `${timeLeft}秒后重发`;
-            
+
             // 开始倒计时
             const countdown = setInterval(() => {
                 timeLeft--;
                 this.innerHTML = `${timeLeft}秒后重发`;
-                
+
                 if (timeLeft <= 0) {
                     clearInterval(countdown);
                     this.disabled = false;
@@ -1073,13 +1128,13 @@ if (result.status === 'success') {
                     isSending = false;
                 }
             }, 1000);
-            
+
             try {
-                const result = await jsonpRequest(API_BASE_URL + '/auth.php', {
+                const result = await jsonpRequest('/auth.php', {
                     mode: 'send_verification',
                     email: email
                 });
-                
+
                 success('验证码已发送到您的邮箱，请检查');
             } catch (e) {
                 success('验证码已发送到您的邮箱，请检查');
@@ -1092,12 +1147,12 @@ if (result.status === 'success') {
             const testBtn = this;
             testBtn.disabled = true;
             testBtn.innerHTML = '测试中...';
-            
+
             const currentUrl = window.location.href;
-            const apiUrl = API_BASE_URL + '/test.php';
-            
+            const apiUrl = buildApiUrl('/test.php');
+
             alert('诊断信息：\n\n当前页面: ' + currentUrl + '\nAPI地址: ' + apiUrl);
-            
+
             try {
                 const result = await jsonpRequest(apiUrl, {});
                 alert('✅ 连接成功!\n\n服务器响应: ' + JSON.stringify(result));
@@ -1106,7 +1161,7 @@ if (result.status === 'success') {
                 errorInfo += '错误: ' + error.message + '\n';
                 errorInfo += '当前页面: ' + currentUrl + '\n';
                 errorInfo += 'API地址: ' + apiUrl + '\n\n';
-                
+
                 // 检测问题
                 if (currentUrl.startsWith('file://')) {
                     errorInfo += '⚠️ 问题原因：\n';
@@ -1125,11 +1180,11 @@ if (result.status === 'success') {
                     errorInfo += '2. 网络被阻断\n';
                     errorInfo += '3. 服务器繁忙';
                 }
-                
+
                 alert(errorInfo);
                 console.error('连接测试失败:', error);
             }
-            
+
             testBtn.disabled = false;
             testBtn.innerHTML = '测试';
         });
@@ -1138,7 +1193,7 @@ if (result.status === 'success') {
         // 忘记密码链接
         document.getElementById('forgotPassword').addEventListener('click', function(e) {
             e.preventDefault();
-            
+
             // 隐藏所有表单，显示忘记密码表单
             document.querySelectorAll('.auth-form').forEach(form => {
                 form.classList.remove('active');
@@ -1149,7 +1204,7 @@ if (result.status === 'success') {
         // 返回登录链接（忘记密码表单）
         document.getElementById('backToLogin').addEventListener('click', function(e) {
             e.preventDefault();
-            
+
             // 隐藏所有表单，显示登录表单
             document.querySelectorAll('.auth-form').forEach(form => {
                 form.classList.remove('active');
@@ -1160,7 +1215,7 @@ if (result.status === 'success') {
         // 返回上一步链接（验证码验证表单）
         document.getElementById('backToForgot').addEventListener('click', function(e) {
             e.preventDefault();
-            
+
             // 隐藏所有表单，显示忘记密码表单
             document.querySelectorAll('.auth-form').forEach(form => {
                 form.classList.remove('active');
@@ -1171,7 +1226,7 @@ if (result.status === 'success') {
         // 返回登录链接（重置密码表单）
         document.getElementById('backToLogin2').addEventListener('click', function(e) {
             e.preventDefault();
-            
+
             // 隐藏所有表单，显示登录表单
             document.querySelectorAll('.auth-form').forEach(form => {
                 form.classList.remove('active');
@@ -1182,7 +1237,7 @@ if (result.status === 'success') {
         // 用户名输入框的logo动画
         const loginUsername = document.getElementById('loginUsername');
         const loginLogoArea = document.getElementById('loginLogoArea');
-        
+
         loginUsername.addEventListener('focus', () => {
             loginLogoArea.innerHTML = `
                 <div class="logo-user logo-change-animation">
@@ -1193,7 +1248,7 @@ if (result.status === 'success') {
                 </div>
             `;
         });
-        
+
         loginUsername.addEventListener('blur', () => {
             if (!loginUsername.value) {
                 loginLogoArea.innerHTML = `
@@ -1210,7 +1265,7 @@ if (result.status === 'success') {
         // 登录表单密码输入时的logo动画
         const loginPassword = document.getElementById('loginPassword');
         const loginPasswordLogoArea = document.getElementById('loginPasswordLogoArea');
-        
+
         loginPassword.addEventListener('focus', () => {
             loginPasswordLogoArea.innerHTML = `
                 <div class="logo-password logo-change-animation">
@@ -1221,7 +1276,7 @@ if (result.status === 'success') {
                 </div>
             `;
         });
-        
+
         loginPassword.addEventListener('blur', () => {
             if (!loginPassword.value) {
                 loginPasswordLogoArea.innerHTML = `
@@ -1238,7 +1293,7 @@ if (result.status === 'success') {
         // 注册用户名输入时的logo动画
         const registerUsername = document.getElementById('registerUsername');
         const registerLogoArea = document.getElementById('registerLogoArea');
-        
+
         registerUsername.addEventListener('focus', () => {
             registerLogoArea.innerHTML = `
                 <div class="logo-user logo-change-animation">
@@ -1249,7 +1304,7 @@ if (result.status === 'success') {
                 </div>
             `;
         });
-        
+
         registerUsername.addEventListener('blur', () => {
             if (!registerUsername.value) {
                 registerLogoArea.innerHTML = `
@@ -1266,7 +1321,7 @@ if (result.status === 'success') {
         // 注册表单密码输入时的logo动画
         const registerPassword = document.getElementById('registerPassword');
         const registerPasswordLogoArea = document.getElementById('registerPasswordLogoArea');
-        
+
         registerPassword.addEventListener('focus', () => {
             registerPasswordLogoArea.innerHTML = `
                 <div class="logo-password logo-change-animation">
@@ -1277,7 +1332,7 @@ if (result.status === 'success') {
                 </div>
             `;
         });
-        
+
         registerPassword.addEventListener('blur', () => {
             if (!registerPassword.value) {
                 registerPasswordLogoArea.innerHTML = `
@@ -1294,7 +1349,7 @@ if (result.status === 'success') {
         // 确认密码输入时的logo动画
         const confirmPassword = document.getElementById('confirmPassword');
         const confirmPasswordLogoArea = document.getElementById('confirmPasswordLogoArea');
-        
+
         confirmPassword.addEventListener('focus', () => {
             confirmPasswordLogoArea.innerHTML = `
                 <div class="logo-password logo-change-animation">
@@ -1305,7 +1360,7 @@ if (result.status === 'success') {
                 </div>
             `;
         });
-        
+
         confirmPassword.addEventListener('blur', () => {
             if (!confirmPassword.value) {
                 confirmPasswordLogoArea.innerHTML = `
@@ -1322,7 +1377,7 @@ if (result.status === 'success') {
         // 邮箱输入时的logo动画
         const email = document.getElementById('email');
         const emailLogoArea = document.getElementById('emailLogoArea');
-        
+
         email.addEventListener('focus', () => {
             emailLogoArea.innerHTML = `
                 <div class="logo-email logo-change-animation">
@@ -1333,7 +1388,7 @@ if (result.status === 'success') {
                 </div>
             `;
         });
-        
+
         email.addEventListener('blur', () => {
             if (!email.value) {
                 emailLogoArea.innerHTML = `
@@ -1350,7 +1405,7 @@ if (result.status === 'success') {
         // 验证码输入时的logo动画
         const verification = document.getElementById('verification');
         const verificationLogoArea = document.getElementById('verificationLogoArea');
-        
+
         verification.addEventListener('focus', () => {
             verificationLogoArea.innerHTML = `
                 <div class="logo-verify logo-change-animation">
@@ -1361,7 +1416,7 @@ if (result.status === 'success') {
                 </div>
             `;
         });
-        
+
         verification.addEventListener('blur', () => {
             if (!verification.value) {
                 verificationLogoArea.innerHTML = `
@@ -1378,7 +1433,7 @@ if (result.status === 'success') {
         // 忘记密码邮箱输入时的logo动画
         const forgotEmail = document.getElementById('forgotEmail');
         const forgotEmailLogoArea = document.getElementById('forgotEmailLogoArea');
-        
+
         forgotEmail.addEventListener('focus', () => {
             forgotEmailLogoArea.innerHTML = `
                 <div class="logo-email logo-change-animation">
@@ -1389,7 +1444,7 @@ if (result.status === 'success') {
                 </div>
             `;
         });
-        
+
         forgotEmail.addEventListener('blur', () => {
             if (!forgotEmail.value) {
                 forgotEmailLogoArea.innerHTML = `
@@ -1406,7 +1461,7 @@ if (result.status === 'success') {
         // 验证邮箱输入时的logo动画
         const verifyEmail = document.getElementById('verifyEmail');
         const verifyEmailLogoArea = document.getElementById('verifyEmailLogoArea');
-        
+
         verifyEmail.addEventListener('focus', () => {
             verifyEmailLogoArea.innerHTML = `
                 <div class="logo-email logo-change-animation">
@@ -1417,7 +1472,7 @@ if (result.status === 'success') {
                 </div>
             `;
         });
-        
+
         verifyEmail.addEventListener('blur', () => {
             if (!verifyEmail.value) {
                 verifyEmailLogoArea.innerHTML = `
@@ -1434,7 +1489,7 @@ if (result.status === 'success') {
         // 验证码输入时的logo动画（验证表单）
         const verificationCode = document.getElementById('verificationCode');
         const verificationCodeLogoArea = document.getElementById('verificationCodeLogoArea');
-        
+
         verificationCode.addEventListener('focus', () => {
             verificationCodeLogoArea.innerHTML = `
                 <div class="logo-verify logo-change-animation">
@@ -1445,7 +1500,7 @@ if (result.status === 'success') {
                 </div>
             `;
         });
-        
+
         verificationCode.addEventListener('blur', () => {
             if (!verificationCode.value) {
                 verificationCodeLogoArea.innerHTML = `
@@ -1462,7 +1517,7 @@ if (result.status === 'success') {
         // 重置密码输入时的logo动画
         const resetNewPassword = document.getElementById('resetNewPassword');
         const resetPasswordLogoArea = document.getElementById('resetPasswordLogoArea');
-        
+
         resetNewPassword.addEventListener('focus', () => {
             resetPasswordLogoArea.innerHTML = `
                 <div class="logo-password logo-change-animation">
@@ -1473,7 +1528,7 @@ if (result.status === 'success') {
                 </div>
             `;
         });
-        
+
         resetNewPassword.addEventListener('blur', () => {
             if (!resetNewPassword.value) {
                 resetPasswordLogoArea.innerHTML = `
@@ -1490,7 +1545,7 @@ if (result.status === 'success') {
         // 确认重置密码输入时的logo动画
         const resetConfirmPassword = document.getElementById('resetConfirmPassword');
         const resetConfirmPasswordLogoArea = document.getElementById('resetConfirmPasswordLogoArea');
-        
+
         resetConfirmPassword.addEventListener('focus', () => {
             resetConfirmPasswordLogoArea.innerHTML = `
                 <div class="logo-password logo-change-animation">
@@ -1501,7 +1556,7 @@ if (result.status === 'success') {
                 </div>
             `;
         });
-        
+
         resetConfirmPassword.addEventListener('blur', () => {
             if (!resetConfirmPassword.value) {
                 resetConfirmPasswordLogoArea.innerHTML = `
