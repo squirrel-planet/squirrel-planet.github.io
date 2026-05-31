@@ -1087,12 +1087,13 @@ if (result.status === 'success') {
             testBtn.innerHTML = '测试中...';
 
             const currentUrl = window.location.href;
-            const apiUrl = buildApiUrl('/test.php');
+            const apiUrl = API_BASE_URL + '/check';
 
             alert('诊断信息：\n\n当前页面: ' + currentUrl + '\nAPI地址: ' + apiUrl);
 
             try {
-                const result = await jsonpRequest(apiUrl, {});
+                const res = await fetch(apiUrl);
+                const result = await res.json();
                 alert('✅ 连接成功!\n\n服务器响应: ' + JSON.stringify(result));
             } catch (err) {
                 let errorInfo = '❌ 连接失败\n\n';
