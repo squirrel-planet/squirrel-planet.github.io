@@ -1069,13 +1069,27 @@ if (result.status === 'success') {
 
             try {
                 const result = await jsonpRequest({
-                    mode: 'send_verification',
+                    mode: 'send_code',
                     email: email
                 });
 
-                success('验证码已发送到您的邮箱，请检查');
+                if (result.status === 'success') {
+                    success('验证码已发送');
+                } else {
+                    // 请求失败，停止倒计时并恢复按钮
+                    clearInterval(countdown);
+                    this.disabled = false;
+                    this.innerHTML = originalText;
+                    isSending = false;
+                    error(result.message || '发送失败');
+                }
             } catch (e) {
-                success('验证码已发送到您的邮箱，请检查');
+                // 网络错误，停止倒计时并恢复按钮
+                clearInterval(countdown);
+                this.disabled = false;
+                this.innerHTML = originalText;
+                isSending = false;
+                error('网络错误，请稍后重试');
             }
         });
 
