@@ -686,63 +686,7 @@
             // 极简fetch：无method、无headers、无body → 绝对不触发预检！
             const res = await fetch(url);
             const data = await res.json();
-
-        async function fetchWithFallback(relativePath, options = {}) {
-            let lastError;
-            for (const baseUrl of API_BASE_URLS) {
-                const url = new URL(relativePath, baseUrl).toString();
-                try {
-                    const res = await fetch(url, options);
-                    if (res.ok) {
-                        return res;
-                    }
-                    if (res.status === 404 || res.status >= 500) {
-                        lastError = new Error(`${res.status} ${res.statusText}: ${url}`);
-                        continue;
-                    }
-                    return res;
-                } catch (err) {
-                    lastError = err;
-                }
-            }
-            throw lastError || new Error(`请求失败：${relativePath}`);
-        }
-
-        async function jsonpRequest(pathOrParams, maybeParams) {
-            let relativePath = '/auth_min.php';
-            let params = {};
-
-            if (typeof pathOrParams === 'string') {
-                relativePath = pathOrParams;
-                params = maybeParams || {};
-            } else {
-                params = pathOrParams || {};
-            }
-
-            let lastError;
-            for (const baseUrl of API_BASE_URLS) {
-                const url = new URL(relativePath, baseUrl);
-                if (Object.keys(params).length > 0) {
-                    url.search = new URLSearchParams(params);
-                }
-
-                console.log('请求:', url.toString());
-
-                try {
-                    const res = await fetch(url.toString());
-                    if (res.ok) {
-                        return await res.json();
-                    }
-                    if (res.status === 404 || res.status >= 500) {
-                        lastError = new Error(`${res.status} ${res.statusText}: ${url}`);
-                        continue;
-                    }
-                    return await res.json();
-                } catch (err) {
-                    lastError = err;
-                }
-            }
-            throw lastError || new Error(`JSONP 请求失败：${relativePath}`);
+            return data;
         }
 
         // 自定义弹窗函数
@@ -933,18 +877,10 @@ if (result.status === 'success') {
 
             try {
                 // 发送请求到后端
-                const response = await fetchWithFallback('/auth.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        mode: 'forgot_password',
-                        email: email
-                    })
+                const result = await jsonpRequest({
+                    mode: 'forgot_password',
+                    email: email
                 });
-
-                const result = await response.json();
 
                 if (result.status === 'success') {
                     alert(result.message);
