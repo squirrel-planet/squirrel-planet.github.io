@@ -671,12 +671,15 @@
 
     <script>
         // 后端 API 地址
-        const API_BASE_URL = 'https://song-shu.infinityfree.me/backend';
+        const API_BASE_URL = 'https://songshu1hao.pythonanywhere.com';
 
         // 唯一能用的请求函数（免费主机专用）
         async function jsonpRequest(params) {
             // 拼接URL参数（纯GET，无任何请求头）
-            const url = `${API_BASE_URL}/auth_min.php?mode=${params.mode}&name=${params.name}&pass=${params.pass}`;
+            const queryString = Object.entries(params)
+                .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+                .join('&');
+            const url = `${API_BASE_URL}/auth_min.php?${queryString}`;
             
             console.log('请求:', url);
             
@@ -828,7 +831,7 @@ if (result.status === 'success') {
             
             try {
                 // 发送请求到后端，包含邮箱和验证码
-                const result = await jsonpRequest(API_BASE_URL + '/auth.php', {
+                const result = await jsonpRequest({
                     mode: 'register',
                     name: username,
                     pass: hashedPassword,
@@ -928,7 +931,7 @@ if (result.status === 'success') {
             
             try {
                 // 发送请求到后端
-                const result = await jsonpRequest(API_BASE_URL + '/auth.php', {
+                const result = await jsonpRequest({
                     mode: 'verify_code',
                     email: email,
                     code: code
@@ -980,7 +983,7 @@ if (result.status === 'success') {
             
             try {
                 // 发送请求到后端
-                const result = await jsonpRequest(API_BASE_URL + '/auth.php', {
+                const result = await jsonpRequest({
                     mode: 'reset_password',
                     temp_token: tempToken,
                     new_password: hashedPassword
@@ -1075,7 +1078,7 @@ if (result.status === 'success') {
             }, 1000);
             
             try {
-                const result = await jsonpRequest(API_BASE_URL + '/auth.php', {
+                const result = await jsonpRequest({
                     mode: 'send_verification',
                     email: email
                 });
