@@ -673,17 +673,12 @@
         // 后端 API 地址
         const API_BASE_URL = 'https://songshu1hao.pythonanywhere.com';
 
-        // 唯一能用的请求函数（免费主机专用）
         async function jsonpRequest(params) {
-            // 拼接URL参数（纯GET，无任何请求头）
             const queryString = Object.entries(params)
                 .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
                 .join('&');
-            const url = `${API_BASE_URL}/auth_min.php?${queryString}`;
-            
+            const url = `${API_BASE_URL}/auth_min?${queryString}`;
             console.log('请求:', url);
-            
-            // 极简fetch：无method、无headers、无body → 绝对不触发预检！
             const res = await fetch(url);
             const data = await res.json();
             return data;
@@ -695,17 +690,13 @@
             const titleEl = document.getElementById('modalTitle');
             const messageEl = document.getElementById('modalMessage');
             const btnEl = document.getElementById('modalBtn');
-
             titleEl.textContent = title;
             messageEl.textContent = message;
-
             overlay.classList.add('show');
-
             btnEl.onclick = function() {
                 overlay.classList.remove('show');
                 if (callback) callback();
             };
-
             overlay.onclick = function(e) {
                 if (e.target === overlay) {
                     overlay.classList.remove('show');
