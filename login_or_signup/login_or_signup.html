@@ -677,7 +677,7 @@
             const queryString = Object.entries(params)
                 .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
                 .join('&');
-            const url = `${API_BASE_URL}/auth_min?${queryString}`;
+            const url = `${API_BASE_URL}/auth?${queryString}`;
             console.log('请求:', url);
             const res = await fetch(url);
             const data = await res.json();
