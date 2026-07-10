@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - 页面走丢了 | 松鼠星球</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <meta name="theme-color" content="#FF8C00">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --orange-primary: #FF8C00;
+            --orange-light: #FFA500;
+            --orange-dark: #FF6B00;
+            --orange-glow: #FFB347;
+            --bg-dark: #0F172A;
+            --bg-card: #1E293B;
+            --text-light: #F8FAFC;
+            --text-dim: #94A3B8;
+            --code-green: #22C55E;
+            --accent-purple: #A855F7;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        .page-wrapper {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .bg-decoration {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .bg-glow {
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            top: 0;
+        }
+
+        .bg-glow-left {
+            left: 0;
+            background: radial-gradient(ellipse at 0% 50%, rgba(255,140,0,0.12) 0%, transparent 60%);
+        }
+
+        .bg-glow-right {
+            right: 0;
+            background: radial-gradient(ellipse at 100% 50%, rgba(255,140,0,0.08) 0%, transparent 60%);
+        }
+
+        .bg-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255,140,0,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,140,0,0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        .header {
+            padding: 30px 60px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            filter: drop-shadow(0 0 10px rgba(255, 140, 0, 0.5));
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--orange-light), var(--orange-primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 60px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content-inner {
+            display: flex;
+            align-items: center;
+            gap: 100px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .left-side {
+            flex: 1;
+        }
+
+        .right-side {
+            flex-shrink: 0;
+        }
+
+        .error-large {
+            font-size: 10rem;
+            font-weight: 900;
+            line-height: 1;
+            background: linear-gradient(135deg, var(--orange-light), var(--orange-primary), var(--orange-glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 30px rgba(255, 140, 0, 0.4));
+            position: relative;
+        }
+
+        .error-large::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 150px;
+            height: 6px;
+            background: linear-gradient(90deg, var(--orange-primary), var(--orange-glow));
+            border-radius: 3px;
+        }
+
+        .error-title {
+            font-size: 2.2rem;
+            color: var(--orange-light);
+            margin-top: 30px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .error-desc {
+            font-size: 1.1rem;
+            color: var(--text-dim);
+            line-height: 1.8;
+            max-width: 400px;
+        }
+
+        .error-desc .highlight {
+            color: var(--orange-primary);
+            font-weight: 500;
+        }
+
+        .squirrel-img {
+            width: 120px;
+            height: 120px;
+            filter: drop-shadow(0 0 20px rgba(255, 140, 0, 0.5));
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .squirrel-status {
+            margin-top: 20px;
+            font-size: 1rem;
+            color: var(--text-dim);
+        }
+
+        .code-box {
+            margin-top: 30px;
+            background: var(--bg-card);
+            padding: 40px 45px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 140, 0, 0.15);
+            font-size: 1.3rem;
+            line-height: 1.9;
+            max-width: 600px;
+        }
+
+        .code-box .keyword { color: var(--code-green); }
+        .code-box .string { color: var(--orange-light); }
+        .code-box .comment { color: var(--text-dim); font-style: italic; }
+        .code-box .number { color: var(--accent-purple); }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 40px;
+            background: linear-gradient(135deg, var(--orange-primary), var(--orange-dark));
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(255, 140, 0, 0.3);
+            margin-top: 30px;
+        }
+
+        .btn-back:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255, 140, 0, 0.5);
+        }
+
+        .btn-back svg {
+            width: 18px;
+            height: 18px;
+            transition: transform 0.3s ease;
+        }
+
+        .btn-back:hover svg {
+            transform: translateX(5px);
+        }
+
+        .floating-shapes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .shape {
+            position: absolute;
+            opacity: 0.15;
+        }
+
+        .shape svg {
+            width: 50px;
+            height: 50px;
+            color: var(--orange-primary);
+        }
+
+        .shape-1 { top: 15%; left: 8%; animation: float 8s ease-in-out infinite; }
+        .shape-2 { top: 25%; right: 12%; animation: float 6s ease-in-out infinite 1s; }
+        .shape-3 { bottom: 20%; left: 15%; animation: float 7s ease-in-out infinite 2s; }
+        .shape-4 { bottom: 30%; right: 8%; animation: float 9s ease-in-out infinite 0.5s; }
+        .shape-5 { top: 50%; left: 5%; animation: float 5s ease-in-out infinite 1.5s; }
+        .shape-6 { top: 40%; right: 5%; animation: float 6s ease-in-out infinite 2.5s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-25px) rotate(8deg); }
+        }
+
+        @media (max-width: 900px) {
+            .content-inner {
+                flex-direction: column-reverse;
+                gap: 50px;
+                text-align: center;
+            }
+
+            .left-side {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .error-large {
+                font-size: 7rem;
+            }
+
+            .error-large::after {
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            .error-desc {
+                max-width: 100%;
+            }
+
+            .squirrel-img {
+                width: 100px;
+                height: 100px;
+            }
+
+            .header {
+                padding: 25px 30px;
+            }
+
+            .main-content {
+                padding: 30px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .error-large {
+                font-size: 5rem;
+            }
+
+            .error-title {
+                font-size: 1.6rem;
+            }
+
+            .header {
+                padding: 20px;
+                justify-content: center;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <div class="bg-decoration">
+            <div class="bg-glow bg-glow-left"></div>
+            <div class="bg-glow bg-glow-right"></div>
+            <div class="bg-grid"></div>
+        </div>
+
+        <div class="floating-shapes">
+            <div class="shape shape-1">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+            </div>
+            <div class="shape shape-2">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                </svg>
+            </div>
+            <div class="shape shape-3">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+            </div>
+            <div class="shape shape-4">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                </svg>
+            </div>
+            <div class="shape shape-5">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </div>
+            <div class="shape shape-6">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="9" y1="3" x2="9" y2="21"></line>
+                </svg>
+            </div>
+        </div>
+
+        <header class="header">
+            <img src="logo.png" alt="松鼠星球" class="logo">
+            <span class="logo-text">松鼠星球</span>
+        </header>
+
+        <main class="main-content">
+            <div class="content-inner">
+                <div class="left-side">
+                    <div class="error-large">404</div>
+                    <h1 class="error-title">页面走丢了</h1>
+                    <p class="error-desc">
+                        这只松鼠迷路了，要找的页面<span class="highlight">不存在</span>或<span class="highlight">已被移动</span>，
+                        让我们回首页吧~
+                    </p>
+                    <a href="index.html" class="btn-back">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
+                        返回首页
+                    </a>
+                </div>
+                <div class="right-side">
+                    <p class="code-box">
+<span class="keyword">const</span> <span class="string">page</span> = {<br>
+&nbsp;&nbsp;<span class="string">"status"</span>: <span class="number">404</span>,<br>
+&nbsp;&nbsp;<span class="string">"squirrel"</span>: <span class="string">"lost"</span>,<br>
+&nbsp;&nbsp;<span class="comment">// 正在努力寻找回家的路</span><br>
+};
+                    </p></div>
+                </div>
+            </main></div>
+</body>
+</html>

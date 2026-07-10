@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>游戏天地 | 松鼠星球</title>
+    <link rel="icon" type="image/png" href="../logo.png">
+    <meta name="theme-color" content="#FF8C00">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="../lib/gsap.min.js"></script>
+    <script src="../lib/ScrollTrigger.min.js"></script>
+    <script src="../lib/lenis.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --orange-primary: #FF8C00;
+            --orange-light: #FFA500;
+            --orange-glow: #FFB347;
+            --orange-dark: #E67E00;
+            --bg-deep: #0A0E17;
+            --bg-card: #111827;
+            --bg-card-hover: #1A2332;
+            --text-primary: #F0F6FC;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+            --glow-orange: 0 0 20px rgba(255, 140, 0, 0.3), 0 0 60px rgba(255, 140, 0, 0.1);
+            --glow-orange-intense: 0 0 30px rgba(255, 140, 0, 0.5), 0 0 80px rgba(255, 140, 0, 0.2);
+            --radius: 16px;
+        }
+
+        html {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        html::-webkit-scrollbar {
+            display: none;
+        }
+
+        body {
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        body::-webkit-scrollbar {
+            display: none;
+        }
+
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .bg-glow {
+            position: fixed;
+            top: -30%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255, 140, 0, 0.08) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 24px 60px;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background: var(--bg-card);
+            color: var(--orange-primary);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            z-index: 100;
+            text-decoration: none;
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .back-btn:hover {
+            background: var(--orange-primary);
+            color: var(--bg-deep);
+        }
+
+        .back-btn svg {
+            width: 18px;
+            height: 18px;
+            transition: transform 0.25s ease;
+        }
+
+        .back-btn:hover svg {
+            transform: translateX(-3px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .header-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, rgba(255, 140, 0, 0.2), rgba(255, 140, 0, 0.05));
+            border-radius: 18px;
+            margin-bottom: 20px;
+            color: var(--orange-primary);
+        }
+
+        .header-icon svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .header h1 {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 2.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--orange-light), var(--orange-primary), var(--orange-glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+
+        .game-card {
+            background: var(--bg-card);
+            overflow: hidden;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            transition: border-color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                        background 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                        box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .game-card:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .card-visual {
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .card-visual::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60%;
+            background: linear-gradient(to top, var(--bg-card), transparent);
+            pointer-events: none;
+        }
+
+        .card-visual svg {
+            width: 72px;
+            height: 72px;
+            color: var(--orange-primary);
+            opacity: 0.7;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-visual-glow {
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            transition: all 0.5s ease;
+        }
+
+        .game-card:hover .card-visual-glow {
+            transform: scale(1.5);
+            opacity: 0.8;
+        }
+
+        .card-visual-bg {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at center, rgba(255, 140, 0, 0.06), transparent);
+        }
+
+        .game-card-content {
+            padding: 24px 28px 28px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .game-title {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--orange-primary);
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .game-description {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            flex: 1;
+        }
+
+        .game-btn {
+            padding: 12px 28px;
+            background: linear-gradient(135deg, var(--orange-primary), var(--orange-dark));
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: 'Nunito', sans-serif;
+            align-self: flex-start;
+        }
+
+        .game-btn svg {
+            width: 18px;
+            height: 18px;
+            transition: transform 0.3s ease;
+        }
+
+        .game-btn:hover {
+            transform: scale(1.04);
+        }
+
+        .game-btn:hover svg {
+            transform: translateX(4px);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 70px 16px 40px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .header p {
+                font-size: 0.95rem;
+            }
+
+            .games-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .card-visual {
+                height: 160px;
+            }
+
+                .card-visual svg {
+                    width: 56px;
+                    height: 56px;
+                }
+
+            .game-card-content {
+                padding: 20px 22px 24px;
+            }
+
+            .game-title {
+                font-size: 1.3rem;
+            }
+
+            .game-btn {
+                align-self: stretch;
+                justify-content: center;
+            }
+
+            .back-btn {
+                padding: 8px 16px;
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .games-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .game-card:hover {
+                transform: none;
+            }
+            .game-btn:hover {
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
+
+    <a href="../index.html" class="back-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+        </svg>
+        返回首页
+    </a>
+
+    <div class="container">
+        <div class="header">
+            <div class="header-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5.5 9.5A3.5 3.5 0 0 1 9 6h6a3.5 3.5 0 0 1 3.5 3.5v3a3.5 3.5 0 0 1-3.5 3.5h-1.5a1 1 0 0 1-1-1V14h-4v.5a1 1 0 0 1-1 1H9a3.5 3.5 0 0 1-3.5-3.5v-3Z" />
+                    <path stroke-linecap="round" d="M7.5 11h3M9 9.5v3" />
+                    <circle cx="15.5" cy="11" r="1" />
+                </svg>
+            </div>
+            <h1>游戏天地</h1>
+            <p>探索松鼠星球的创意游戏世界</p>
+        </div>
+
+        <div class="games-grid">
+            <div class="game-card">
+                <div class="card-visual">
+                    <div class="card-visual-bg"></div>
+                    <div class="card-visual-glow"></div>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
+                    </svg>
+                </div>
+                <div class="game-card-content">
+                    <h2 class="game-title">小行星</h2>
+                    <p class="game-description">一款休闲益智的太空冒险游戏。控制你的小行星在宇宙中穿梭，收集资源，躲避障碍，探索无垠的星际空间。简单的操作带来无尽的乐趣！</p>
+                    <a href="asteroid.html" class="game-btn">
+                        开始游戏
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <div class="game-card">
+                <div class="card-visual">
+                    <div class="card-visual-bg"></div>
+                    <div class="card-visual-glow"></div>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6Zm0 9.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6Zm0 9.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
+                    </svg>
+                </div>
+                <div class="game-card-content">
+                    <h2 class="game-title">消除卡片</h2>
+                    <p class="game-description">经典的三消玩法，配合炫酷的特效和流畅的动画。多种道具和特殊方块等你来发现，挑战高分榜单！</p>
+                    <a href="eliminate-cards.html" class="game-btn">
+                        开始游戏
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <div class="game-card">
+                <div class="card-visual">
+                    <div class="card-visual-bg"></div>
+                    <div class="card-visual-glow"></div>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
+                    </svg>
+                </div>
+                <div class="game-card-content">
+                    <h2 class="game-title">勇者跑酷</h2>
+                    <p class="game-description">经典的跑酷重现！避开岩浆和其他机关，挑战你的反应速度。</p>
+                    <a href="brave-parkour.html" class="game-btn">
+                        开始游戏
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <div class="game-card">
+                <div class="card-visual">
+                    <div class="card-visual-bg"></div>
+                    <div class="card-visual-glow"></div>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 8.689c0-.864.933-1.406 1.683-.977l7.108 4.061a1.125 1.125 0 0 1 0 1.954l-7.108 4.061A1.125 1.125 0 0 1 3 16.811V8.69ZM12.75 8.689c0-.864.933-1.406 1.683-.977l7.108 4.061a1.125 1.125 0 0 1 0 1.954l-7.108 4.061a1.125 1.125 0 0 1-1.683-.977V8.69Z" />
+                    </svg>
+                </div>
+                <div class="game-card-content">
+                    <h2 class="game-title">登山赛车</h2>
+                    <p class="game-description">物理赛车游戏，控制汽车移动，拾取汽油，获得金币，获取高分。刺激的山地驾驶体验！</p>
+                    <a href="mountaineering-racing.html" class="game-btn">
+                        开始游戏
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const mm = gsap.matchMedia();
+
+        mm.add("(prefers-reduced-motion: no-preference)", () => {
+            const lenis = new Lenis({
+                duration: 1.2,
+                easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+                wheelMultiplier: 1,
+            });
+
+            lenis.on('scroll', ScrollTrigger.update);
+
+            gsap.ticker.add(time => lenis.raf(time * 1000));
+            gsap.ticker.lagSmoothing(0);
+
+            const tl = gsap.timeline({ defaults: { ease: 'back.out(4)', duration: 0.9 } });
+
+            tl.from('.header', { y: -50, opacity: 0 })
+              .fromTo('.game-card', { y: 120, opacity: 0 }, {
+                  y: 0, opacity: 1, duration: 1, stagger: 0.12,
+                  ease: 'back.out(4)'
+              }, '-=0.4');
+
+            document.querySelectorAll('.game-card').forEach(card => {
+                const svg = card.querySelector('.card-visual svg');
+                if (!svg) return;
+                card.addEventListener('mouseenter', () => {
+                    gsap.to(card, { y: -6, duration: 0.3, ease: 'power2.out' });
+                    gsap.to(svg, { scale: 1.15, opacity: 1, duration: 0.3, ease: 'power2.out' });
+                });
+                card.addEventListener('mouseleave', () => {
+                    gsap.to(card, { y: 0, duration: 0.3, ease: 'power2.out' });
+                    gsap.to(svg, { scale: 1, opacity: 0.7, duration: 0.3, ease: 'power2.out' });
+                });
+            });
+
+            return () => {
+                lenis.destroy();
+                tl.kill();
+            };
+        });
+    </script>
+</body>
+</html>

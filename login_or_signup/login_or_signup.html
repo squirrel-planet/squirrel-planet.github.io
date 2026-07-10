@@ -1,0 +1,1382 @@
+<html lang="zh-CN"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登陆星球 - 松鼠星球</title>
+    <link rel="icon" type="image/png" href="../logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&amp;family=Russo+One&amp;family=Noto+Sans+SC:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --orange-primary: #FF8C00;
+            --orange-light: #FFA500;
+            --orange-dark: #FF6B00;
+            --orange-glow: #FFB347;
+            --bg-dark: #0A0E17;
+            --bg-card: #121822;
+            --text-light: #F0F6FC;
+            --text-dim: #8892A4;
+            --text-muted: #5A6478;
+            --code-green: #00FF9D;
+            --accent-purple: #A855F7;
+            --accent-pink: #EC4899;
+            --neon-orange: #FF8C00;
+            --font-display: 'Russo One', 'Noto Sans SC', sans-serif;
+            --font-body: 'Chakra Petch', 'Noto Sans SC', sans-serif;
+            --font-fallback: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            --scanline-opacity: 0.04;
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg-dark: #F5F0EB;
+                --bg-card: #FFFFFF;
+                --text-light: #1A1A2E;
+                --text-dim: #5A6478;
+                --text-muted: #8B949E;
+                --scanline-opacity: 0;
+            }
+        }
+
+        body {
+            font-family: var(--font-fallback);
+            background: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 0 80px 0 60px;
+            position: relative;
+        }
+
+
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            margin: 0;
+            padding: 40px;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { background-position: 0% 0; }
+            50% { background-position: 100% 0; }
+        }
+
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            bottom: -10px;
+            border-radius: 50%;
+            animation: floatUp linear infinite;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.8; }
+            90% { opacity: 0.4; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+
+        .auth-header {
+            position: fixed;
+            top: 60px;
+            right: 80px;
+            text-align: right;
+            z-index: 10;
+            max-width: 500px;
+        }
+
+        .auth-header p {
+            font-family: var(--font-body);
+            font-weight: 300;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            margin-top: 8px;
+            font-size: 1.8rem;
+        }
+
+        *:focus-visible {
+            outline: 2px solid var(--orange-primary);
+            outline-offset: 2px;
+            border-radius: 4px;
+        }
+
+        .form-footer a {
+            cursor: pointer;
+        }
+
+        .auth-header h1 {
+            font-family: var(--font-display);
+            font-size: 7rem;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--orange-light), var(--orange-primary), var(--orange-glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(255, 140, 0, 0.3);
+            letter-spacing: 2px;
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 24px;
+            background: rgba(255, 140, 0, 0.1);
+            border-radius: 12px;
+            padding: 5px;
+            width: 100%;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 18px;
+            border: none;
+            background: transparent;
+            color: var(--text-dim);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: var(--orange-primary);
+            color: var(--bg-dark);
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .input-container {
+            display: flex;
+            align-items: stretch;
+            border-radius: 12px;
+            background: #151008;
+            overflow: hidden;
+        }
+
+        .logo-area {
+            width: 50px; /* 减小logo区域宽度 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 140, 0, 0.1);
+        }
+
+        .logo-area img {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+        }
+
+        .logo-area svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 15px;
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            font-size: 1rem;
+            outline: none;
+
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+
+        .input-field::placeholder {
+            color: var(--text-dim);
+        }
+
+        .input-with-btn {
+            flex: 1;
+            display: flex;
+        }
+
+        .btn-wrapper {
+            padding: 0 8px; /* 减小按钮包装器的内边距 */
+            display: flex;
+            align-items: center;
+        }
+
+        .copy-btn, .send-btn {
+            padding: 10px 10px;
+            background: rgba(255, 140, 0, 0.2);
+            color: var(--orange-primary);
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            width: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            box-sizing: border-box;
+        }
+
+        .copy-btn:hover, .send-btn:hover {
+            background: rgba(255, 140, 0, 0.3);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--orange-primary), var(--orange-dark));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 140, 0, 0.3);
+        }
+
+        .auth-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .form-footer a {
+            color: var(--orange-primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .message {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+        }
+
+        .message.success {
+            background: rgba(0, 255, 157, 0.1);
+            border: 1px solid rgba(0, 255, 157, 0.3);
+            color: var(--code-green);
+        }
+
+        .message.error {
+            background: rgba(236, 72, 153, 0.1);
+            border: 1px solid rgba(236, 72, 153, 0.3);
+            color: var(--accent-pink);
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .logo-user {
+            background: rgba(255, 140, 0, 0.1);
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+        }
+
+        .logo-password {
+            background: rgba(168, 85, 247, 0.1);
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+        }
+
+        .logo-email {
+            background: rgba(236, 72, 153, 0.1);
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+        }
+
+        .logo-verify {
+            background: rgba(255, 215, 0, 0.1);
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+        }
+
+        .logo-change-animation {
+            animation: logoChange 0.3s ease;
+        }
+
+        @keyframes logoChange {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .logo-change-animation {
+                animation: none;
+            }
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+            justify-content: flex-start;
+                padding: 20px;
+            }
+
+            .auth-header {
+                position: static;
+                text-align: center;
+                margin-bottom: 30px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 25px 20px;
+            }
+
+            .auth-header h1 {
+                font-size: 2.4rem;
+            }
+
+            .auth-header p {
+                font-size: 1rem;
+            }
+
+            .input-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .logo-area {
+                padding: 10px 0;
+                width: 100%;
+            }
+
+            .input-field {
+                padding: 14px 12px;
+                font-size: 16px;
+            }
+
+            .tab-btn {
+                padding: 12px 8px;
+                font-size: 0.9rem;
+            }
+
+            .auth-btn {
+                padding: 14px;
+                font-size: 1rem;
+            }
+
+            .copy-btn, .send-btn {
+                padding: 10px 8px;
+                min-width: 36px;
+            }
+        }
+
+        @media (max-width: 375px) {
+            .container {
+                padding: 20px 15px;
+            }
+
+            .auth-header h1 {
+                font-size: 1.8rem;
+            }
+
+            .auth-tabs {
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .tab-btn {
+                padding: 10px;
+                font-size: 0.85rem;
+            }
+
+            .input-group label {
+                font-size: 0.85rem;
+            }
+
+            .input-field {
+                padding: 12px 10px;
+                font-size: 15px;
+            }
+
+            .btn-wrapper {
+                padding: 4px;
+            }
+
+            .copy-btn, .send-btn {
+                padding: 8px 6px;
+                min-width: 32px;
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .container {
+                padding: 50px;
+            }
+        }
+
+        /* 自定义弹窗样式 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            box-shadow: 0 20px 60px rgba(255, 140, 0, 0.3);
+            text-align: center;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-light);
+        }
+
+        .modal-message {
+            font-size: 0.95rem;
+            color: var(--text-dim);
+            margin-bottom: 25px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            text-align: center;
+        }
+
+        .modal-btn {
+            padding: 12px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: var(--font-body);
+        }
+
+        .modal-btn.primary {
+            background: linear-gradient(135deg, var(--orange-primary), var(--orange-dark));
+            color: white;
+        }
+
+        .modal-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 140, 0, 0.4);
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+</head>
+<body>
+    <div id="particles"><div class="particle" style="left: 86.8253%; animation-delay: 1.10369s; animation-duration: 12.0423s; width: 2.62431px; height: 2.62431px; background: rgb(255, 179, 71);"></div><div class="particle" style="left: 29.9333%; animation-delay: 6.36901s; animation-duration: 19.1252s; width: 2.45824px; height: 2.45824px; background: rgb(0, 255, 157);"></div><div class="particle" style="left: 76.5059%; animation-delay: 12.3599s; animation-duration: 11.506s; width: 5.91777px; height: 5.91777px; background: rgb(255, 165, 0);"></div><div class="particle" style="left: 52.7928%; animation-delay: 14.6024s; animation-duration: 10.4166s; width: 3.13758px; height: 3.13758px; background: rgb(255, 140, 0);"></div><div class="particle" style="left: 84.7425%; animation-delay: 5.56794s; animation-duration: 10.4866s; width: 3.69663px; height: 3.69663px; background: rgb(255, 165, 0);"></div><div class="particle" style="left: 80.3396%; animation-delay: 9.67985s; animation-duration: 18.3607s; width: 2.82866px; height: 2.82866px; background: rgb(255, 165, 0);"></div><div class="particle" style="left: 97.3815%; animation-delay: 11.8575s; animation-duration: 10.2402s; width: 3.683px; height: 3.683px; background: rgb(0, 255, 157);"></div><div class="particle" style="left: 31.4766%; animation-delay: 0.455785s; animation-duration: 13.6346s; width: 4.71728px; height: 4.71728px; background: rgb(255, 165, 0);"></div><div class="particle" style="left: 13.4776%; animation-delay: 0.374916s; animation-duration: 15.2476s; width: 2.60855px; height: 2.60855px; background: rgb(255, 179, 71);"></div><div class="particle" style="left: 20.6123%; animation-delay: 1.90264s; animation-duration: 12.4264s; width: 5.00559px; height: 5.00559px; background: rgb(255, 179, 71);"></div><div class="particle" style="left: 99.7035%; animation-delay: 10.7849s; animation-duration: 13.2615s; width: 4.03938px; height: 4.03938px; background: rgb(255, 165, 0);"></div><div class="particle" style="left: 73.8041%; animation-delay: 12.89s; animation-duration: 13.7691s; width: 3.16812px; height: 3.16812px; background: rgb(168, 85, 247);"></div><div class="particle" style="left: 38.6708%; animation-delay: 12.3361s; animation-duration: 17.3759s; width: 3.08519px; height: 3.08519px; background: rgb(255, 140, 0);"></div><div class="particle" style="left: 35.4669%; animation-delay: 12.33s; animation-duration: 11.5102s; width: 2.65652px; height: 2.65652px; background: rgb(168, 85, 247);"></div><div class="particle" style="left: 15.217%; animation-delay: 13.7307s; animation-duration: 11.0306s; width: 3.10238px; height: 3.10238px; background: rgb(255, 179, 71);"></div><div class="particle" style="left: 7.5108%; animation-delay: 6.17137s; animation-duration: 16.8757s; width: 2.28984px; height: 2.28984px; background: rgb(168, 85, 247);"></div><div class="particle" style="left: 57.2262%; animation-delay: 13.454s; animation-duration: 13.246s; width: 4.80115px; height: 4.80115px; background: rgb(255, 165, 0);"></div><div class="particle" style="left: 45.646%; animation-delay: 9.25544s; animation-duration: 16.581s; width: 2.0808px; height: 2.0808px; background: rgb(255, 140, 0);"></div><div class="particle" style="left: 25.4805%; animation-delay: 2.16599s; animation-duration: 11.0834s; width: 4.36288px; height: 4.36288px; background: rgb(0, 255, 157);"></div><div class="particle" style="left: 47.8609%; animation-delay: 0.762441s; animation-duration: 15.2937s; width: 4.66874px; height: 4.66874px; background: rgb(255, 140, 0);"></div><div class="particle" style="left: 87.2949%; animation-delay: 8.60783s; animation-duration: 14.1631s; width: 3.49247px; height: 3.49247px; background: rgb(255, 165, 0);"></div><div class="particle" style="left: 89.8192%; animation-delay: 7.26996s; animation-duration: 13.1249s; width: 3.47874px; height: 3.47874px; background: rgb(255, 179, 71);"></div><div class="particle" style="left: 13.5263%; animation-delay: 8.53327s; animation-duration: 10.9151s; width: 5.58973px; height: 5.58973px; background: rgb(255, 140, 0);"></div><div class="particle" style="left: 19.7128%; animation-delay: 5.26048s; animation-duration: 10.6147s; width: 3.66189px; height: 3.66189px; background: rgb(255, 179, 71);"></div><div class="particle" style="left: 36.5706%; animation-delay: 4.78558s; animation-duration: 12.1392s; width: 2.32331px; height: 2.32331px; background: rgb(255, 165, 0);"></div><div class="particle" style="left: 18.6413%; animation-delay: 6.87285s; animation-duration: 12.0985s; width: 2.01089px; height: 2.01089px; background: rgb(168, 85, 247);"></div><div class="particle" style="left: 59.7349%; animation-delay: 5.9087s; animation-duration: 13.1515s; width: 3.40152px; height: 3.40152px; background: rgb(168, 85, 247);"></div><div class="particle" style="left: 92.2137%; animation-delay: 4.56732s; animation-duration: 18.9792s; width: 4.8885px; height: 4.8885px; background: rgb(168, 85, 247);"></div><div class="particle" style="left: 4.61406%; animation-delay: 1.14713s; animation-duration: 17.4764s; width: 2.63777px; height: 2.63777px; background: rgb(255, 165, 0);"></div><div class="particle" style="left: 31.4754%; animation-delay: 11.5194s; animation-duration: 14.9967s; width: 2.18356px; height: 2.18356px; background: rgb(255, 140, 0);"></div><div class="particle" style="left: 22.0188%; animation-delay: 10.6433s; animation-duration: 19.3191s; width: 3.51992px; height: 3.51992px; background: rgb(255, 140, 0);"></div><div class="particle" style="left: 20.844%; animation-delay: 11.5751s; animation-duration: 13.1867s; width: 4.44315px; height: 4.44315px; background: rgb(255, 165, 0);"></div><div class="particle" style="left: 27.218%; animation-delay: 14.0269s; animation-duration: 19.5039s; width: 3.52848px; height: 3.52848px; background: rgb(255, 179, 71);"></div><div class="particle" style="left: 40.7884%; animation-delay: 3.35796s; animation-duration: 10.8557s; width: 5.34964px; height: 5.34964px; background: rgb(255, 165, 0);"></div><div class="particle" style="left: 6.83961%; animation-delay: 12.5973s; animation-duration: 16.0089s; width: 3.30539px; height: 3.30539px; background: rgb(255, 165, 0);"></div><div class="particle" style="left: 69.7637%; animation-delay: 0.212513s; animation-duration: 17.2511s; width: 3.72682px; height: 3.72682px; background: rgb(255, 165, 0);"></div><div class="particle" style="left: 40.2376%; animation-delay: 2.80755s; animation-duration: 13.1891s; width: 4.41447px; height: 4.41447px; background: rgb(255, 179, 71);"></div><div class="particle" style="left: 54.6027%; animation-delay: 3.46669s; animation-duration: 13.8092s; width: 3.53893px; height: 3.53893px; background: rgb(168, 85, 247);"></div><div class="particle" style="left: 3.72489%; animation-delay: 11.0854s; animation-duration: 10.6649s; width: 4.80489px; height: 4.80489px; background: rgb(255, 179, 71);"></div><div class="particle" style="left: 52.0403%; animation-delay: 11.8347s; animation-duration: 14.4245s; width: 4.68316px; height: 4.68316px; background: rgb(255, 165, 0);"></div><div class="particle" style="left: 44.5307%; animation-delay: 12.3269s; animation-duration: 19.3195s; width: 3.05995px; height: 3.05995px; background: rgb(255, 179, 71);"></div><div class="particle" style="left: 65.6843%; animation-delay: 14.8686s; animation-duration: 15.8795s; width: 3.18727px; height: 3.18727px; background: rgb(168, 85, 247);"></div><div class="particle" style="left: 4.43688%; animation-delay: 4.6123s; animation-duration: 15.9955s; width: 3.8178px; height: 3.8178px; background: rgb(255, 165, 0);"></div><div class="particle" style="left: 40.0175%; animation-delay: 2.78678s; animation-duration: 15.3434s; width: 4.81113px; height: 4.81113px; background: rgb(255, 179, 71);"></div><div class="particle" style="left: 23.6442%; animation-delay: 5.18895s; animation-duration: 17.3125s; width: 3.72599px; height: 3.72599px; background: rgb(255, 165, 0);"></div><div class="particle" style="left: 38.7398%; animation-delay: 0.428018s; animation-duration: 17.6446s; width: 4.81624px; height: 4.81624px; background: rgb(168, 85, 247);"></div><div class="particle" style="left: 25.5002%; animation-delay: 2.27053s; animation-duration: 14.3044s; width: 3.43198px; height: 3.43198px; background: rgb(0, 255, 157);"></div><div class="particle" style="left: 71.3007%; animation-delay: 11.2509s; animation-duration: 18.117s; width: 3.5392px; height: 3.5392px; background: rgb(0, 255, 157);"></div><div class="particle" style="left: 94.5937%; animation-delay: 6.62853s; animation-duration: 14.8342s; width: 3.63014px; height: 3.63014px; background: rgb(255, 179, 71);"></div><div class="particle" style="left: 23.0221%; animation-delay: 4.1884s; animation-duration: 10.0598s; width: 4.98447px; height: 4.98447px; background: rgb(0, 255, 157);"></div></div>
+
+
+    <div class="auth-header">
+        <h1>松鼠星球</h1>
+        <p>欢迎来到代码与艺术缠绕的魔法秘境</p>
+    </div><div class="container">
+        <div class="auth-tabs">
+            <button class="tab-btn active" data-tab="login">登录</button>
+            <button class="tab-btn" data-tab="register">注册</button>
+        </div>
+
+            <!-- 登录表单 -->
+            <form id="loginForm" class="auth-form active">
+                <div class="input-group">
+                    <label for="loginUsername">用户名</label>
+                    <div class="input-container">
+                        <div class="logo-area" id="loginLogoArea">
+                            <div class="logo-user">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div>
+                        </div>
+                        <input type="text" id="loginUsername" class="input-field" placeholder="请输入用户名" autocomplete="username">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="loginPassword">密码</label>
+                    <div class="input-container">
+                        <div class="logo-area" id="loginPasswordLogoArea">
+                            <div class="logo-password">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <input type="password" id="loginPassword" class="input-field" placeholder="请输入密码" autocomplete="current-password">
+                        <div class="btn-wrapper">
+                            <button type="button" class="copy-btn" id="loginCopyBtn" title="复制密码">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="auth-btn">登录</button>
+
+                <div class="form-footer">
+                    <a href="#" id="forgotPassword">忘记密码？</a>
+                </div>
+            </form>
+
+            <!-- 注册表单 -->
+            <form id="registerForm" class="auth-form">
+                <div class="input-group">
+                    <label for="registerUsername">用户名</label>
+                    <div class="input-container">
+                        <div class="logo-area" id="registerLogoArea">
+                            <div class="logo-user">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div>
+                        </div>
+                        <input type="text" id="registerUsername" class="input-field" placeholder="请输入用户名" autocomplete="username">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="registerPassword">密码</label>
+                    <div class="input-container">
+                        <div class="logo-area" id="registerPasswordLogoArea">
+                            <div class="logo-password">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <input type="password" id="registerPassword" class="input-field" placeholder="请输入密码" autocomplete="new-password">
+                        <div class="btn-wrapper">
+                            <button type="button" class="copy-btn" id="registerCopyBtn" title="复制密码">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="confirmPassword">再次输入密码</label>
+                    <div class="input-container">
+                        <div class="logo-area" id="confirmPasswordLogoArea">
+                            <div class="logo-password">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <input type="password" id="confirmPassword" class="input-field" placeholder="请再次输入密码" autocomplete="new-password">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="email">邮箱</label>
+                    <div class="input-container">
+                        <div class="logo-area" id="emailLogoArea">
+                            <div class="logo-email">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="5" width="18" height="14" rx="2" ry="2"></rect>
+                                    <polyline points="3,5 12,12 21,5"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+                        <input type="text" id="email" class="input-field" placeholder="请输入邮箱" autocomplete="email">
+                        <div class="btn-wrapper">
+                            <button type="button" class="send-btn" id="sendVerification" title="发送验证码">发送</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="verification">验证码</label>
+                    <div class="input-container">
+                        <div class="logo-area" id="verificationLogoArea">
+                            <div class="logo-verify">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12,6 12,12 16,14"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+                        <input type="text" id="verification" class="input-field" placeholder="请输入验证码">
+                    </div>
+                </div>
+
+                <button type="submit" class="auth-btn">注册</button>
+            </form>
+
+            <!-- 忘记密码表单 -->
+            <form id="forgotPasswordForm" class="auth-form">
+                <div class="input-group">
+                    <label for="forgotEmail">邮箱</label>
+                    <div class="input-container">
+                        <div class="logo-area" id="forgotEmailLogoArea">
+                            <div class="logo-email">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="5" width="18" height="14" rx="2" ry="2"></rect>
+                                    <polyline points="3,5 12,12 21,5"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+                        <input type="text" id="forgotEmail" class="input-field" placeholder="请输入注册时使用的邮箱">
+                    </div>
+                </div>
+
+                <button type="submit" class="auth-btn">发送验证码</button>
+
+                <div class="form-footer">
+                    <a href="#" id="backToLogin">返回登录</a>
+                </div>
+            </form>
+
+            <!-- 验证码验证表单 -->
+            <form id="verifyCodeForm" class="auth-form">
+                <div class="input-group">
+                    <label for="verifyEmail">邮箱</label>
+                    <div class="input-container">
+                        <div class="logo-area" id="verifyEmailLogoArea">
+                            <div class="logo-email">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="5" width="18" height="14" rx="2" ry="2"></rect>
+                                    <polyline points="3,5 12,12 21,5"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+                        <input type="text" id="verifyEmail" class="input-field" placeholder="请输入邮箱" readonly="">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="verificationCode">验证码</label>
+                    <div class="input-container">
+                        <div class="logo-area" id="verificationCodeLogoArea">
+                            <div class="logo-verify">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12,6 12,12 16,14"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+                        <input type="text" id="verificationCode" class="input-field" placeholder="请输入收到的验证码">
+                    </div>
+                </div>
+
+                <button type="submit" class="auth-btn">验证验证码</button>
+
+                <div class="form-footer">
+                    <a href="#" id="backToForgot">返回上一步</a>
+                </div>
+            </form>
+
+            <!-- 重置密码表单 -->
+            <form id="resetPasswordForm" class="auth-form">
+                <div class="input-group">
+                    <label for="resetNewPassword">新密码</label>
+                    <div class="input-container">
+                        <div class="logo-area" id="resetPasswordLogoArea">
+                            <div class="logo-password">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <input type="password" id="resetNewPassword" class="input-field" placeholder="请输入新密码">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="resetConfirmPassword">确认新密码</label>
+                    <div class="input-container">
+                        <div class="logo-area" id="resetConfirmPasswordLogoArea">
+                            <div class="logo-password">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <input type="password" id="resetConfirmPassword" class="input-field" placeholder="请再次输入新密码">
+                    </div>
+                </div>
+
+                <input type="hidden" id="resetTempToken">
+
+                <button type="submit" class="auth-btn">重置密码</button>
+
+                <div class="form-footer">
+                    <a href="#" id="backToLogin2">返回登录</a>
+                </div>
+            </form>
+    </div>
+
+    <!-- 自定义弹窗 -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <div class="modal-title" id="modalTitle">提示</div>
+            <div class="modal-message" id="modalMessage"></div>
+            <button class="modal-btn primary" id="modalBtn">确定</button>
+        </div>
+    </div>
+
+    <script>
+        // 后端 API 地址
+        const API_BASE_URL = 'https://songshu1hao.pythonanywhere.com';
+
+        async function jsonpRequest(params) {
+            const queryString = Object.entries(params)
+                .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+                .join('&');
+            const url = `${API_BASE_URL}/auth?${queryString}`;
+            console.log('请求:', url);
+            const res = await fetch(url);
+            const data = await res.json();
+            return data;
+        }
+
+        // 自定义弹窗函数
+        function showModal(type, title, message, callback) {
+            const overlay = document.getElementById('modalOverlay');
+            const titleEl = document.getElementById('modalTitle');
+            const messageEl = document.getElementById('modalMessage');
+            const btnEl = document.getElementById('modalBtn');
+            gsap.set('.modal-content', { clearProps: 'all' });
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            overlay.classList.add('show');
+            var mc = document.querySelector('.modal-content');
+            if (mc) gsap.fromTo(mc, { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(1.7)', clearProps: 'transform' });
+            btnEl.onclick = function() {
+                overlay.classList.remove('show');
+                if (callback) callback();
+            };
+            overlay.onclick = function(e) {
+                if (e.target === overlay) {
+                    overlay.classList.remove('show');
+                    if (callback) callback();
+                }
+            };
+        }
+
+        function alert(msg, callback) {
+            showModal('info', '提示', msg, callback);
+        }
+
+        function success(msg, callback) {
+            showModal('success', '成功', msg, callback);
+        }
+
+        function error(msg, callback) {
+            showModal('error', '错误', msg, callback);
+        }
+
+        function warning(msg, callback) {
+            showModal('warning', '警告', msg, callback);
+        }
+
+        // 当前邮箱（用于忘记密码流程）
+        let currentEmail = '';
+        // 验证码发送状态
+        let isSending = false;
+
+        // 带 GSAP 动画的切换表单
+        var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        function switchFormWithAnimation(formId, slideOutDir) {
+            var target = document.getElementById(formId);
+            if (!target) return;
+            document.querySelectorAll('.auth-form').forEach(function(f) { f.classList.remove('active'); f.style.display = 'none'; });
+            target.classList.add('active');
+            target.style.display = 'block';
+            if (!prefersReducedMotion) {
+                target.style.opacity = '0';
+                target.style.transform = slideOutDir === 'left' ? 'translateX(30px)' : 'translateX(-30px)';
+                gsap.to(target, { opacity: 1, x: 0, duration: 0.35, ease: 'power2.out', clearProps: 'transform' });
+            } else {
+                target.style.opacity = '1';
+                target.style.transform = 'none';
+            }
+        }
+
+        // 切换登录/注册表单
+            document.querySelectorAll('.tab-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                button.classList.add('active');
+                var tab = button.getAttribute('data-tab');
+                switchFormWithAnimation(tab + 'Form', tab === 'login' ? 'right' : 'left');
+            });
+        });
+
+        // 登录表单提交事件
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!username || !password) {
+                warning('请填写用户名和密码');
+                return;
+            }
+
+            // 使用SHA-256对密码进行加密
+            const hashedPassword = await hashPassword(password);
+
+            try {
+                // 使用 JSONP 方式请求 测试端点
+                const result = await jsonpRequest({
+                    mode: 'login',
+                    name: username,
+                    pass: hashedPassword
+                });
+
+if (result.status === 'success') {
+                    // 登录成功处理
+                    success('登录成功！', () => {
+                        window.location.href = '../index.html';
+                    });
+                } else {
+                    error(result.message || '登录失败');
+                }
+            } catch (err) {
+                console.error('登录错误:', err);
+                alert('网络错误，请稍后重试');
+            }
+        });
+
+        // 注册表单提交事件
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const email = document.getElementById('email').value;
+            const verification = document.getElementById('verification').value;
+
+            if (!username || !password || !confirmPassword || !email || !verification) {
+                warning('请填写所有字段');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                warning('两次输入的密码不一致');
+                return;
+            }
+
+            if (password.length < 6) {
+                warning('密码长度至少为6位');
+                return;
+            }
+
+            if (!isValidEmail(email)) {
+                warning('邮箱格式不正确');
+                return;
+            }
+
+            // 使用SHA-256对密码进行加密
+            const hashedPassword = await hashPassword(password);
+
+            try {
+                // 发送请求到后端，包含邮箱和验证码
+                const result = await jsonpRequest({
+                    mode: 'register',
+                    name: username,
+                    pass: hashedPassword,
+                    email: email,
+                    verification_code: verification
+                });
+
+                if (result.status === 'success') {
+                    success('注册成功！');
+                    document.querySelectorAll('.tab-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    document.querySelector('.tab-btn[data-tab="login"]').classList.add('active');
+                    switchFormWithAnimation('loginForm', 'left');
+                } else {
+                    error(result.message || '注册失败');
+                }
+} catch (err) {
+                console.error('登录错误:', err);
+                alert('网络错误，请稍后重试');
+            }
+        });
+
+        // 忘记密码表单提交事件
+        document.getElementById('forgotPasswordForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('forgotEmail').value;
+
+            if (!email) {
+                warning('请填写邮箱');
+                return;
+            }
+
+            if (!isValidEmail(email)) {
+                warning('邮箱格式不正确');
+                return;
+            }
+
+            try {
+                // 发送请求到后端
+                const result = await jsonpRequest({
+                    mode: 'forgot_password',
+                    email: email
+                });
+
+                if (result.status === 'success') {
+                    alert(result.message);
+                    currentEmail = email;
+                    document.getElementById('verifyEmail').value = email;
+                    switchFormWithAnimation('verifyCodeForm', 'left');
+                } else {
+                    error(result.message || '发送失败');
+                }
+            } catch (err) {
+                console.error('忘记密码错误:', err);
+                alert('网络错误，请稍后重试');
+            }
+        });
+
+        // 验证码验证表单提交事件
+        document.getElementById('verifyCodeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('verifyEmail').value;
+            const code = document.getElementById('verificationCode').value;
+
+            if (!email || !code) {
+                warning('请填写邮箱和验证码');
+                return;
+            }
+
+            if (!isValidEmail(email)) {
+                warning('邮箱格式不正确');
+                return;
+            }
+
+            try {
+                // 发送请求到后端
+                const result = await jsonpRequest({
+                    mode: 'verify_code',
+                    email: email,
+                    code: code
+                });
+
+                if (result.status === 'success') {
+                    success('验证码验证成功！请设置新密码');
+                    document.getElementById('resetTempToken').value = result.temp_token;
+                    switchFormWithAnimation('resetPasswordForm', 'left');
+                } else {
+                    error(result.message || '验证失败');
+                }
+            } catch (err) {
+                console.error('验证码验证错误:', err);
+                alert('网络错误，请稍后重试');
+            }
+        });
+
+        // 重置密码表单提交事件
+        document.getElementById('resetPasswordForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const newPassword = document.getElementById('resetNewPassword').value;
+            const confirmPassword = document.getElementById('resetConfirmPassword').value;
+            const tempToken = document.getElementById('resetTempToken').value;
+
+            if (!newPassword || !confirmPassword || !tempToken) {
+                warning('请填写所有字段');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                warning('两次输入的密码不一致');
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                warning('密码长度至少为6位');
+                return;
+            }
+
+            // 使用SHA-256对密码进行加密
+            const hashedPassword = await hashPassword(newPassword);
+
+            try {
+                // 发送请求到后端
+                const result = await jsonpRequest({
+                    mode: 'reset_password',
+                    temp_token: tempToken,
+                    new_password: hashedPassword
+                });
+
+                if (result.status === 'success') {
+                    success('密码重置成功！请使用新密码登录');
+                    document.querySelectorAll('.tab-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    document.querySelector('.tab-btn[data-tab="login"]').classList.add('active');
+                    switchFormWithAnimation('loginForm', 'left');
+                } else {
+                    error(result.message || '重置失败');
+                }
+            } catch (err) {
+                console.error('重置密码错误:', err);
+                alert('网络错误，请稍后重试');
+            }
+        });
+
+        // 复制成功SVG图标
+        var copySuccessSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00FF9D" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
+        // 复制密码按钮功能（通用）
+        function setupCopyBtn(btnId, inputId) {
+            document.getElementById(btnId).addEventListener('click', function() {
+                const field = document.getElementById(inputId);
+                field.select();
+                document.execCommand('copy');
+                const original = this.innerHTML;
+                this.innerHTML = copySuccessSvg;
+                this.style.borderColor = 'rgba(0, 255, 157, 0.3)';
+                setTimeout(() => {
+                    this.innerHTML = original;
+                    this.style.borderColor = '';
+                }, 2000);
+            });
+        }
+
+        setupCopyBtn('loginCopyBtn', 'loginPassword');
+        setupCopyBtn('registerCopyBtn', 'registerPassword');
+
+        // 发送验证码按钮功能
+        document.getElementById('sendVerification').addEventListener('click', async function() {
+            const email = document.getElementById('email').value;
+            if (!email) {
+                warning('请先填写邮箱');
+                return;
+            }
+
+            if (!isValidEmail(email)) {
+                warning('邮箱格式不正确');
+                return;
+            }
+
+            if (isSending) {
+                return; // 防止重复点击
+            }
+
+            isSending = true;
+            const originalText = this.innerHTML;
+            let timeLeft = 60;
+
+            // 禁用按钮并开始倒计时
+            this.disabled = true;
+            this.innerHTML = `${timeLeft}秒后重发`;
+
+            // 开始倒计时
+            const countdown = setInterval(() => {
+                timeLeft--;
+                this.innerHTML = `${timeLeft}秒后重发`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    this.disabled = false;
+                    this.innerHTML = originalText;
+                    isSending = false;
+                }
+            }, 1000);
+
+            try {
+                const result = await jsonpRequest({
+                    mode: 'send_code',
+                    email: email
+                });
+
+                if (result.status === 'success') {
+                    success('验证码已发送');
+                } else {
+                    // 请求失败，停止倒计时并恢复按钮
+                    clearInterval(countdown);
+                    this.disabled = false;
+                    this.innerHTML = originalText;
+                    isSending = false;
+                    error(result.message || '发送失败');
+                }
+            } catch (e) {
+                // 网络错误，停止倒计时并恢复按钮
+                clearInterval(countdown);
+                this.disabled = false;
+                this.innerHTML = originalText;
+                isSending = false;
+                error('网络错误，请稍后重试');
+            }
+        });
+
+        // 测试连接按钮
+        /*
+        document.getElementById('testConnection').addEventListener('click', async function() {
+            const testBtn = this;
+            testBtn.disabled = true;
+            testBtn.innerHTML = '测试中...';
+
+            const currentUrl = window.location.href;
+            const apiUrl = API_BASE_URL + '/check';
+
+            alert('诊断信息：\n\n当前页面: ' + currentUrl + '\nAPI地址: ' + apiUrl);
+
+            try {
+                const res = await fetch(apiUrl);
+                const result = await res.json();
+                alert('✅ 连接成功!\n\n服务器响应: ' + JSON.stringify(result));
+            } catch (err) {
+                let errorInfo = '❌ 连接失败\n\n';
+                errorInfo += '错误: ' + error.message + '\n';
+                errorInfo += '当前页面: ' + currentUrl + '\n';
+                errorInfo += 'API地址: ' + apiUrl + '\n\n';
+
+                // 检测问题
+                if (currentUrl.startsWith('file://')) {
+                    errorInfo += '⚠️ 问题原因：\n';
+                    errorInfo += '你正在从本地文件打开页面 (file://)\n';
+                    errorInfo += '浏览器会阻止跨域请求\n\n';
+                    errorInfo += '解决方案：\n';
+                    errorInfo += '将 HTML 文件上传到服务器上访问\n';
+                    errorInfo += '或使用本地服务器 (如 Live Server)';
+                } else if (!apiUrl.startsWith(currentUrl.split('/').slice(0, 3).join('/'))) {
+                    errorInfo += '⚠️ 问题原因：\n';
+                    errorInfo += '页面和 API 不在同一个域名\n';
+                    errorInfo += '可能存在跨域问题';
+                } else if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+                    errorInfo += '⚠️ 可能原因：\n';
+                    errorInfo += '1. CORS 预检请求失败\n';
+                    errorInfo += '2. 网络被阻断\n';
+                    errorInfo += '3. 服务器繁忙';
+                }
+
+                alert(errorInfo);
+                console.error('连接测试失败:', error);
+            }
+
+            testBtn.disabled = false;
+            testBtn.innerHTML = '测试';
+        });
+        */
+
+        // 忘记密码链接
+        document.getElementById('forgotPassword').addEventListener('click', function(e) {
+            e.preventDefault();
+            switchFormWithAnimation('forgotPasswordForm', 'right');
+        });
+
+        // 返回登录链接（忘记密码表单）
+        document.getElementById('backToLogin').addEventListener('click', function(e) {
+            e.preventDefault();
+            switchFormWithAnimation('loginForm', 'left');
+        });
+
+        // 返回上一步链接（验证码验证表单）
+        document.getElementById('backToForgot').addEventListener('click', function(e) {
+            e.preventDefault();
+            switchFormWithAnimation('forgotPasswordForm', 'right');
+        });
+
+        // 返回登录链接（重置密码表单）
+        document.getElementById('backToLogin2').addEventListener('click', function(e) {
+            e.preventDefault();
+            switchFormWithAnimation('loginForm', 'left');
+        });
+
+        // 优化logo动画：使用class切换替代innerHTML替换
+        function setupLogoAnimation(inputId, logoAreaId) {
+            const input = document.getElementById(inputId);
+            const logoArea = document.getElementById(logoAreaId);
+            const innerDiv = logoArea.querySelector('div');
+            input.addEventListener('focus', () => {
+                innerDiv.classList.add('logo-change-animation');
+            });
+            input.addEventListener('blur', () => {
+                if (!input.value) {
+                    innerDiv.classList.remove('logo-change-animation');
+                }
+            });
+        }
+
+        setupLogoAnimation('loginUsername', 'loginLogoArea');
+        setupLogoAnimation('loginPassword', 'loginPasswordLogoArea');
+        setupLogoAnimation('registerUsername', 'registerLogoArea');
+        setupLogoAnimation('registerPassword', 'registerPasswordLogoArea');
+        setupLogoAnimation('confirmPassword', 'confirmPasswordLogoArea');
+        setupLogoAnimation('email', 'emailLogoArea');
+        setupLogoAnimation('verification', 'verificationLogoArea');
+        setupLogoAnimation('forgotEmail', 'forgotEmailLogoArea');
+        setupLogoAnimation('verifyEmail', 'verifyEmailLogoArea');
+        setupLogoAnimation('verificationCode', 'verificationCodeLogoArea');
+        setupLogoAnimation('resetNewPassword', 'resetPasswordLogoArea');
+        setupLogoAnimation('resetConfirmPassword', 'resetConfirmPasswordLogoArea');
+
+        // 使用Web Crypto API进行密码哈希
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // 验证邮箱格式
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        // 入口 GSAP 动画
+        (function() {
+            var isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (isReduced) return;
+            var tl = gsap.timeline({ delay: 0.2 });
+            tl.fromTo('.auth-header', { y: -40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out', clearProps: 'opacity,transform' })
+              .fromTo('.auth-tabs', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out', clearProps: 'opacity,transform' }, '-=0.3')
+              .fromTo('.auth-form.active', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out', clearProps: 'opacity,transform' }, '-=0.3');
+        })();
+
+        function createParticles() {
+            const container = document.getElementById('particles');
+            if (!container) return;
+            const particleCount = 50;
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                const size = Math.random() * 4 + 2;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                const colors = ['#FF8C00', '#FFA500', '#FFB347', '#00FF9D', '#A855F7'];
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                container.appendChild(particle);
+            }
+        }
+        createParticles();
+    </script>
+
+</body></html>
