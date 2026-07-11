@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>松鼠签到 - 松鼠星球</title>
-    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="icon" type="image/png" href="../logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -13,327 +16,801 @@
         }
 
         :root {
-            --orange-primary: #FF8C00;
-            --orange-light: #FFA500;
-            --orange-dark: #FF6B00;
-            --orange-glow: #FFB347;
-            --bg-dark: #0D1117;
-            --bg-card: #161B22;
-            --text-light: #F0F6FC;
-            --text-dim: #8B949E;
-            --code-green: #00FF9D;
-            --accent-purple: #A855F7;
-            --accent-pink: #EC4899;
+            --primary: #F97316;
+            --primary-light: #FB923C;
+            --primary-dark: #EA580C;
+            --primary-glow: rgba(249, 115, 22, 0.4);
+            --cta: #2563EB;
+            --cta-glow: rgba(37, 99, 235, 0.4);
+            --bg-dark: #0B1120;
+            --bg-card: rgba(22, 27, 38, 0.85);
+            --bg-card-solid: #161B26;
+            --text-light: #F1F5F9;
+            --text-dim: #94A3B8;
+            --text-muted: #64748B;
+            --border-subtle: rgba(249, 115, 22, 0.15);
+            --border-glass: rgba(255, 255, 255, 0.06);
+            --success: #22C55E;
+            --danger: #EF4444;
+            --fortune-luck: #FCD34D;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
         }
 
         body {
-            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Nunito', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--bg-dark);
             color: var(--text-light);
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
+            padding: 40px 48px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 50% at 50% -10%, rgba(249, 115, 22, 0.08) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 40% at 80% 90%, rgba(37, 99, 235, 0.06) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 10% 80%, rgba(249, 115, 22, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .floating-shapes {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .shape {
+            position: absolute;
+            display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            opacity: 0.2;
+            color: #F97316;
+        }
+
+        .shape svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .shape-1  { width: 100px; top: 5%;   left: 6%;   animation: floatShape 20s ease-in-out infinite; }
+        .shape-2  { width: 80px;  top: 3%;   right: 8%;  animation: floatShape 24s ease-in-out infinite reverse; }
+        .shape-3  { width: 56px;  top: 12%;  left: 28%;  animation: floatShape 18s ease-in-out infinite 3s; }
+        .shape-4  { width: 70px;  top: 8%;   right: 30%; animation: floatShape 22s ease-in-out infinite 5s; }
+        .shape-5  { width: 48px;  top: 35%;  left: 3%;   animation: floatShape 26s ease-in-out infinite 2s; }
+        .shape-6  { width: 64px;  top: 30%;  right: 4%;  animation: floatShape 20s ease-in-out infinite 7s; }
+        .shape-7  { width: 52px;  top: 45%;  left: 20%;  animation: floatShape 23s ease-in-out infinite 1s; }
+        .shape-8  { width: 76px;  top: 50%;  right: 22%; animation: floatShape 19s ease-in-out infinite 4s; }
+        .shape-9  { width: 44px;  top: 60%;  left: 6%;   animation: floatShape 25s ease-in-out infinite 6s; }
+        .shape-10 { width: 90px;  top: 68%;  right: 6%;  animation: floatShape 21s ease-in-out infinite 8s; }
+        .shape-11 { width: 60px;  top: 78%;  left: 25%;  animation: floatShape 27s ease-in-out infinite 2.5s; }
+        .shape-12 { width: 50px;  top: 85%;  right: 28%; animation: floatShape 17s ease-in-out infinite 5.5s; }
+        .shape-13 { width: 72px;  top: 92%;  left: 5%;   animation: floatShape 22s ease-in-out infinite 7.5s; }
+        .shape-14 { width: 42px;  top: 88%;  right: 12%; animation: floatShape 24s ease-in-out infinite 1.5s; }
+        .shape-15 { width: 58px;  top: 20%;  left: 50%;  animation: floatShape 20s ease-in-out infinite 9s; }
+        .shape-16 { width: 66px;  top: 72%;  left: 50%;  animation: floatShape 26s ease-in-out infinite 4.5s; }
+
+        @keyframes floatShape {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(16px, -20px) rotate(5deg); }
+            50% { transform: translate(-8px, 14px) rotate(-3deg); }
+            75% { transform: translate(10px, 6px) rotate(4deg); }
+        }
+
+        @keyframes floatShape {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(16px, -20px) rotate(5deg); }
+            50% { transform: translate(-8px, 14px) rotate(-3deg); }
+            75% { transform: translate(10px, 6px) rotate(4deg); }
         }
 
         .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
             width: 100%;
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
-        }
-
-        .check-in-container {
-            background: var(--bg-card);
-            border-radius: 20px;
-            padding: 40px;
-            border: 1px solid rgba(255, 140, 0, 0.2);
-            box-shadow: 0 20px 60px rgba(255, 140, 0, 0.2);
             position: relative;
-            overflow: hidden;
-            text-align: center;
+            z-index: 1;
         }
 
-        .check-in-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--orange-dark), var(--orange-glow), var(--orange-dark));
+        .check-in-card {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            border-radius: 0;
+            position: relative;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .check-in-card::before {
+            display: none;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 0;
+            padding-top: 20px;
+        }
+
+        .logo-wrap {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 24px;
+            position: relative;
         }
 
         .logo {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 15px;
+            width: 120px;
+            height: 120px;
             display: block;
+            position: relative;
+            z-index: 1;
         }
 
         .header h1 {
-            font-size: 2rem;
-            margin-bottom: 10px;
-            background: linear-gradient(135deg, var(--orange-light), var(--orange-primary));
+            font-family: 'Fredoka', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary), var(--primary-dark));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            color: var(--text-dim);
+            font-size: 1.2rem;
+            font-weight: 500;
         }
 
         .check-in-btn {
-            display: inline-block;
-            padding: 16px 40px;
-            background: linear-gradient(135deg, var(--orange-primary), var(--orange-dark));
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 22px 64px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
-            text-decoration: none;
-            border-radius: 50px;
+            border-radius: 60px;
+            font-family: 'Fredoka', sans-serif;
             font-weight: 600;
-            font-size: 1.1rem;
+            font-size: 1.35rem;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
             border: none;
-            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px var(--primary-glow);
+        }
+
+        .check-in-btn-wrap {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex: 1;
+        }
+
+        .check-in-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent 30%, rgba(255, 255, 255, 0.15) 50%, transparent 70%);
+            background-size: 200% 100%;
+            animation: btnShine 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes btnShine {
+            0% { background-position: 200% 0; }
+            50% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
         }
 
         .check-in-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(255, 140, 0, 0.4);
+            box-shadow: 0 8px 32px var(--primary-glow);
         }
 
         .check-in-btn:active {
-            transform: translateY(-1px) scale(0.98);
+            transform: translateY(-1px) scale(0.97);
         }
 
-        .result-container {
-            background: rgba(255, 140, 0, 0.1);
-            border-radius: 15px;
-            padding: 25px;
-            margin-top: 25px;
-            text-align: left;
+        .check-in-btn:focus-visible {
+            outline: 2px solid var(--primary-light);
+            outline-offset: 4px;
+        }
+
+        .check-in-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-icon {
+            width: 22px;
+            height: 22px;
+            flex-shrink: 0;
+        }
+
+        .loading-spinner {
             display: none;
+            width: 22px;
+            height: 22px;
+            border: 2.5px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
         }
 
-        .result-title {
-            color: var(--orange-light);
-            font-size: 1.3rem;
-            margin-bottom: 15px;
-            text-align: center;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
-        .result-item {
-            margin-bottom: 10px;
-            line-height: 1.6;
-        }
-
-        .result-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .result-item strong {
-            color: var(--orange-light);
-        }
-
-        .list-item {
-            margin-left: 20px;
-        }
+        .check-in-btn.loading .btn-icon { display: none; }
+        .check-in-btn.loading .loading-spinner { display: inline-block; }
+        .check-in-btn.loading .btn-text { opacity: 0.7; }
 
         .modal {
             display: none;
             position: fixed;
             z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            padding: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
         }
 
         .modal-content {
             background: var(--bg-card);
-            margin: 5% auto;
-            padding: 30px;
-            border-radius: 20px;
-            width: 80%;
-            max-width: 500px;
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            padding: 36px 32px 32px;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 520px;
             text-align: center;
-            border: 1px solid rgba(255, 140, 0, 0.3);
+            border: 1px solid var(--border-glass);
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
             position: relative;
-            animation: zoomIn 0.3s ease;
+            animation: modalEnter 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
-        @keyframes zoomIn {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+        @keyframes modalEnter {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
         }
 
-        .close {
-            color: var(--text-dim);
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
+        .modal-close {
             position: absolute;
-            right: 15px;
-            top: 10px;
+            right: 16px;
+            top: 16px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-dim);
         }
 
-        .close:hover {
-            color: var(--orange-primary);
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
         }
 
-        .modal-result {
+        .modal-close:focus-visible {
+            outline: 2px solid var(--primary-light);
+            outline-offset: 2px;
+        }
+
+        .modal-header {
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .modal-header .success-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 12px;
+            display: block;
+        }
+
+        .modal-header h2 {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .modal-header .date-badge {
+            display: inline-block;
+            margin-top: 6px;
+            padding: 4px 14px;
+            background: rgba(249, 115, 22, 0.12);
+            border-radius: 20px;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .result-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
             text-align: left;
-            margin-top: 20px;
         }
 
-        .modal-result .result-item {
-            margin-bottom: 12px;
+        .result-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 18px 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            transition: all 0.2s ease;
+            cursor: default;
         }
 
-        .modal-result .list-item {
-            margin-left: 25px;
+        .result-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(249, 115, 22, 0.2);
+        }
+
+        .result-card-icon {
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: rgba(249, 115, 22, 0.1);
+        }
+
+        .result-card-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .result-card-icon.weather { background: rgba(251, 191, 36, 0.12); }
+        .result-card-icon.weather svg { color: #FBBF24; }
+        .result-card-icon.event { background: rgba(37, 99, 235, 0.12); }
+        .result-card-icon.event svg { color: #60A5FA; }
+        .result-card-icon.fortune { background: rgba(252, 211, 77, 0.12); }
+        .result-card-icon.fortune svg { color: var(--fortune-luck); }
+        .result-card-icon.yi { background: rgba(34, 197, 94, 0.12); }
+        .result-card-icon.yi svg { color: var(--success); }
+        .result-card-icon.ji { background: rgba(239, 68, 68, 0.12); }
+        .result-card-icon.ji svg { color: var(--danger); }
+
+        .result-card-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .result-card-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            margin-bottom: 3px;
+        }
+
+        .result-card-value {
+            font-size: 1rem;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+
+        .result-card-value .highlight {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.1rem;
+        }
+
+        .result-card-value .fortune-badge {
+            display: inline-block;
+            padding: 2px 14px;
+            border-radius: 20px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.1rem;
+        }
+
+        .fortune-badge.great { background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.1)); color: var(--success); }
+        .fortune-badge.good { background: linear-gradient(135deg, rgba(252, 211, 77, 0.2), rgba(252, 211, 77, 0.1)); color: var(--fortune-luck); }
+        .fortune-badge.bad { background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1)); color: var(--danger); }
+
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .tag-yi {
+            background: rgba(34, 197, 94, 0.12);
+            color: var(--success);
+        }
+
+        .tag-ji {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--danger);
+        }
+
+        .tag svg {
+            width: 14px;
+            height: 14px;
         }
 
         .footer {
             text-align: center;
-            margin-top: 30px;
-            color: var(--text-dim);
+            margin-top: 0;
+            padding-bottom: 20px;
+            color: var(--text-muted);
             font-size: 0.9rem;
+            font-weight: 500;
         }
 
-        @media (max-width: 768px) {
-            .check-in-container {
-                padding: 30px 20px;
+        .footer span {
+            display: inline-block;
+        }
+
+        @media (max-width: 640px) {
+            body { padding: 24px 20px; }
+            .header h1 { font-size: 2.4rem; }
+            .header p { font-size: 1rem; }
+            .logo-wrap { width: 90px; height: 90px; }
+            .logo { width: 90px; height: 90px; }
+            .check-in-btn { padding: 18px 48px; font-size: 1.15rem; }
+            .modal-content { padding: 28px 20px 24px; border-radius: 20px; margin: 0; }
+            .modal-header h2 { font-size: 1.3rem; }
+            .result-card { padding: 14px 16px; gap: 12px; }
+            .result-card-icon { width: 36px; height: 36px; }
+            .result-card-icon svg { width: 18px; height: 18px; }
+            .shape-1  { width: 70px; }
+            .shape-2  { width: 56px; }
+            .shape-3  { width: 42px; }
+            .shape-4  { width: 50px; }
+            .shape-5  { width: 36px; }
+            .shape-6  { width: 48px; }
+            .shape-7  { width: 40px; }
+            .shape-8  { width: 54px; }
+            .shape-9  { width: 34px; }
+            .shape-10 { width: 62px; }
+            .shape-11 { width: 44px; }
+            .shape-12 { width: 38px; }
+            .shape-13 { width: 52px; }
+            .shape-14 { width: 32px; }
+            .shape-15 { width: 42px; }
+            .shape-16 { width: 46px; }
+        }
+
+        @media (max-width: 375px) {
+            .header h1 { font-size: 1.5rem; }
+            .check-in-btn { padding: 14px 28px; font-size: 1rem; }
+            .tag-list { gap: 6px; }
+            .tag { font-size: 0.8rem; padding: 2px 10px; }
+        }
+
+        .confetti-container {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 999;
+            overflow: hidden;
+        }
+
+        .confetti-piece {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            top: -10px;
+            animation: confettiFall linear forwards;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(0) rotate(0deg) scale(1);
+                opacity: 1;
             }
-            
-            .modal-content {
-                width: 90%;
-                margin: 10% auto;
-                padding: 20px;
+            100% {
+                transform: translateY(100vh) rotate(720deg) scale(0.3);
+                opacity: 0;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="check-in-container">
-            <div class="header">
-                <img src="logo.png" alt="松鼠星球 Logo" class="logo">
-                <h1>松鼠签到</h1>
-                <p>叮咚！该签到了！快来松鼠星球签到吧！</p>
-            </div>
-            
-            <button class="check-in-btn" id="checkInBtn">开始签到</button>
-            
-            <div class="result-container" id="resultContainer">
-                <h3 class="result-title">签到结果</h3>
-                <div id="resultContent"></div>
-            </div>
-            
-            <div class="footer">
-                <p>© <script>document.write(new Date().getFullYear())</script> 松鼠星球 | 用代码编织梦想，用创意点亮星空</p>
-            </div>
+
+    <div class="floating-shapes" aria-hidden="true">
+        <div class="shape shape-1">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
         </div>
-    </div>
-    
-    <!-- 签到结果模态框 -->
-    <div id="resultModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2 style="color: var(--orange-light); margin-bottom: 20px;">签到结果</h2>
-            <div class="modal-result" id="modalResultContent"></div>
+        <div class="shape shape-2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+            </svg>
+        </div>
+        <div class="shape shape-3">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+        </div>
+        <div class="shape shape-4">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+            </svg>
+        </div>
+        <div class="shape shape-5">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+        </div>
+        <div class="shape shape-6">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="9" y1="3" x2="9" y2="21"></line>
+            </svg>
+        </div>
+        <div class="shape shape-7">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+        </div>
+        <div class="shape shape-8">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                <path d="M2 17l10 5 10-5"></path>
+                <path d="M2 12l10 5 10-5"></path>
+            </svg>
+        </div>
+        <div class="shape shape-9">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <polyline points="4 17 10 11 14 15 20 9"></polyline>
+            </svg>
+        </div>
+        <div class="shape shape-10">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+        </div>
+        <div class="shape shape-11">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                <line x1="6" y1="1" x2="6" y2="4"></line>
+                <line x1="10" y1="1" x2="10" y2="4"></line>
+                <line x1="14" y1="1" x2="14" y2="4"></line>
+            </svg>
+        </div>
+        <div class="shape shape-12">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+        </div>
+        <div class="shape shape-13">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+        </div>
+        <div class="shape shape-14">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+        </div>
+        <div class="shape shape-15">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+        </div>
+        <div class="shape shape-16">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
         </div>
     </div>
 
+    <div class="container">
+        <div class="check-in-card">
+            <div class="header">
+                <div class="logo-wrap">
+                    <img src="../logo.png" alt="松鼠星球" class="logo">
+                </div>
+                <h1>松鼠签到</h1>
+                <p>叮咚！今日份的签到正在等你 ✨</p>
+            </div>
+
+            <div class="check-in-btn-wrap">
+                <button class="check-in-btn" id="checkInBtn" type="button">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M20 6L9 17l-5-5"/>
+                    </svg>
+                    <div class="loading-spinner" role="status" aria-label="加载中"></div>
+                    <span class="btn-text">开始签到</span>
+                </button>
+            </div>
+
+            <div class="footer">
+                <span>&copy; <script>document.write(new Date().getFullYear())</script> 松鼠星球 · 用代码编织梦想</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="resultModal" class="modal" role="dialog" aria-modal="true" aria-label="签到结果">
+        <div class="modal-content">
+            <button class="modal-close" id="modalCloseBtn" type="button" aria-label="关闭">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+
+            <div class="modal-header">
+                <svg class="success-icon" viewBox="0 0 56 56" fill="none" aria-hidden="true">
+                    <circle cx="28" cy="28" r="26" stroke="url(#successGrad)" stroke-width="2.5"/>
+                    <path d="M18 28l7 7 13-13" stroke="url(#successGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <defs>
+                        <linearGradient id="successGrad" x1="0" y1="0" x2="56" y2="56">
+                            <stop stop-color="#FB923C"/>
+                            <stop offset="1" stop-color="#F97316"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <h2>签到成功！</h2>
+                <div class="date-badge" id="dateBadge"></div>
+            </div>
+
+            <div class="result-grid" id="resultGrid"></div>
+        </div>
+    </div>
+
+    <div class="confetti-container" id="confettiContainer" aria-hidden="true"></div>
+
     <script>
-        // 获取当前日期的随机种子
+        const CONFETTI_COLORS = ['#F97316', '#FB923C', '#FCD34D', '#22C55E', '#60A5FA', '#A855F7', '#EC4899'];
+        const SEASON_EMOJI = { spring: '\u{1F33C}', summer: '\u{2600}\u{FE0F}', autumn: '\u{1F341}', winter: '\u{2744}\u{FE0F}' };
+
         function getDaySeed() {
             const now = new Date();
-            // 使用年月日作为种子，确保每天的随机结果相同
             return now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
         }
-        
-        // 生成基于种子的随机数
+
         function seededRandom(seed) {
-            // 简单的线性同余生成器
             seed = (seed * 9301 + 49297) % 233280;
             return seed / 233280;
         }
-        
-        // 获取当前季节
-        function getCurrentSeason() {
-            const month = new Date().getMonth() + 1;
-            if (month >= 3 && month <= 5) return 'spring'; // 春季
-            if (month >= 6 && month <= 8) return 'summer'; // 夏季
-            if (month >= 9 && month <= 11) return 'autumn'; // 秋季
-            return 'winter'; // 冬季
+
+        function shuffleArray(arr, seed) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(seededRandom(seed + i) * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
         }
-        
-        // 初始化天气
+
+        function getCurrentSeason() {
+            const m = new Date().getMonth() + 1;
+            if (m >= 3 && m <= 5) return 'spring';
+            if (m >= 6 && m <= 8) return 'summer';
+            if (m >= 9 && m <= 11) return 'autumn';
+            return 'winter';
+        }
+
         function initializeWeather(seed) {
             const season = getCurrentSeason();
-            let weatherList = [];
-            
-            // 根据季节设定天气概率
-            switch (season) {
-                case 'spring':
-                    weatherList = [
-                        { name: '春雨绵绵', probability: 0.2 },
-                        { name: '春风和煦', probability: 0.3 },
-                        { name: '春雷滚滚', probability: 0.1 },
-                        { name: '阳光明媚', probability: 0.25 },
-                        { name: '多云转晴', probability: 0.15 }
-                    ];
-                    break;
-                case 'summer':
-                    weatherList = [
-                        { name: '烈日炎炎', probability: 0.3 },
-                        { name: '雷阵雨', probability: 0.25 },
-                        { name: '阴云密布', probability: 0.15 },
-                        { name: '清风徐来', probability: 0.2 },
-                        { name: '暴雨如注', probability: 0.1 }
-                    ];
-                    break;
-                case 'autumn':
-                    weatherList = [
-                        { name: '秋高气爽', probability: 0.3 },
-                        { name: '秋风萧瑟', probability: 0.2 },
-                        { name: '细雨缠绵', probability: 0.2 },
-                        { name: '天高云淡', probability: 0.2 },
-                        { name: '雾气朦胧', probability: 0.1 }
-                    ];
-                    break;
-                case 'winter':
-                    weatherList = [
-                        { name: '雪花纷飞', probability: 0.3 },
-                        { name: '寒风刺骨', probability: 0.25 },
-                        { name: '冰天雪地', probability: 0.2 },
-                        { name: '晴空万里', probability: 0.15 },
-                        { name: '雾凇沆砀', probability: 0.1 }
-                    ];
-                    break;
+            const weatherMap = {
+                spring: [
+                    { name: '春雨绵绵', probability: 0.2 },
+                    { name: '春风和煦', probability: 0.3 },
+                    { name: '春雷滚滚', probability: 0.1 },
+                    { name: '阳光明媚', probability: 0.25 },
+                    { name: '多云转晴', probability: 0.15 }
+                ],
+                summer: [
+                    { name: '烈日炎炎', probability: 0.3 },
+                    { name: '雷阵雨', probability: 0.25 },
+                    { name: '阴云密布', probability: 0.15 },
+                    { name: '清风徐来', probability: 0.2 },
+                    { name: '暴雨如注', probability: 0.1 }
+                ],
+                autumn: [
+                    { name: '秋高气爽', probability: 0.3 },
+                    { name: '秋风萧瑟', probability: 0.2 },
+                    { name: '细雨缠绵', probability: 0.2 },
+                    { name: '天高云淡', probability: 0.2 },
+                    { name: '雾气朦胧', probability: 0.1 }
+                ],
+                winter: [
+                    { name: '雪花纷飞', probability: 0.3 },
+                    { name: '寒风刺骨', probability: 0.25 },
+                    { name: '冰天雪地', probability: 0.2 },
+                    { name: '晴空万里', probability: 0.15 },
+                    { name: '雾凇沆砀', probability: 0.1 }
+                ]
+            };
+            const list = weatherMap[season];
+            let r = seededRandom(seed);
+            for (const w of list) {
+                r -= w.probability;
+                if (r <= 0) return w.name;
             }
-            
-            // 使用随机种子选择天气
-            let randomValue = seededRandom(seed);
-            let cumulativeProbability = 0;
-            
-            for (const weather of weatherList) {
-                cumulativeProbability += weather.probability;
-                if (randomValue < cumulativeProbability) {
-                    return weather.name;
-                }
-            }
-            
-            return weatherList[0].name; // 默认返回第一个
+            return list[0].name;
         }
-        
-        // 初始化事件列表
+
         function initializeEvents(seed) {
             const events = [
                 '松鼠们正在收集代码松子',
@@ -352,170 +829,244 @@
                 '设计师创作了新界面',
                 '开发者修复了安全漏洞'
             ];
-            
-            // 使用种子生成随机索引
-            const randomIndex = Math.floor(seededRandom(seed) * events.length);
-            return events[randomIndex];
-        }
-        
-        // 初始化运势
-        function initializeFortune() {
-            const fortunes = [
-                '小吉',
-                '中吉',
-                '大吉',
-                '小凶',
-                '中凶',
-                '大凶'
-            ];
-            
-            // 使用当前时间戳（精确到秒）作为种子
-            const timestampSeed = Math.floor(Date.now() / 1000); // 转换为秒级时间戳
-            const randomIndex = Math.floor(seededRandom(timestampSeed) * fortunes.length);
-            return fortunes[randomIndex];
-        }
-        
-        // 根据天气、事件、运势生成宜忌列表
-        function generateGuidance(weather, event, fortune) {
-            const timestampSeed = Date.now();
-            let randomValue = seededRandom(timestampSeed);
-            
-            // 宜事项
-            const yiList = [];
-            if (weather.includes('晴') || weather.includes('和煦')) {
-                yiList.push('外出交流', '学习新知识', '拓展人脉');
-            } else if (weather.includes('雨') || weather.includes('雪')) {
-                yiList.push('室内活动', '深度思考', '整理代码');
-            } else if (weather.includes('风')) {
-                yiList.push('创新思维', '灵感创作', '代码重构');
-            } else if (weather.includes('雷') || weather.includes('暴')) {
-                yiList.push('安全第一', '风险控制', '备份数据');
-            } else {
-                yiList.push('保持常态', '稳步前进', '持续学习');
-            }
-            
-            if (event.includes('调试') || event.includes('修复')) {
-                yiList.push('解决问题', '提升技能', '精益求精');
-            } else if (event.includes('学习') || event.includes('AI')) {
-                yiList.push('学习新知识', '探索新技术', '提升能力');
-            } else if (event.includes('设计') || event.includes('创作')) {
-                yiList.push('创意发挥', '美学追求', '用户体验');
-            }
-            
-            // 添加一些通用的宜事项
-            yiList.push('编写文档', '代码审查', '技术分享');
-            
-            // 忌事项
-            const jiList = [];
-            if (weather.includes('晴') || weather.includes('和煦')) {
-                jiList.push('暴晒', '过度劳累', '忽视防晒');
-            } else if (weather.includes('雨') || weather.includes('雪')) {
-                jiList.push('外出', '淋雨', '匆忙行动');
-            } else if (weather.includes('风')) {
-                jiList.push('粗心大意', '急躁冒进', '忽视细节');
-            } else if (weather.includes('雷') || weather.includes('暴')) {
-                jiList.push('冒险尝试', '激进操作', '忽视安全');
-            } else {
-                jiList.push('随意更改', '匆忙决定', '忽视流程');
-            }
-            
-            if (event.includes('调试') || event.includes('修复')) {
-                jiList.push('忽略错误', '急躁修复', '不测再测');
-            } else if (event.includes('学习') || event.includes('AI')) {
-                jiList.push('浅尝辄止', '半途而废', '不求甚解');
-            } else if (event.includes('设计') || event.includes('创作')) {
-                jiList.push('忽视用户', '缺乏创新', '粗糙处理');
-            }
-            
-            // 添加一些通用的忌事项
-            jiList.push('熬夜', '拖沓', '忽视测试');
-            
-            // 随机选择3个宜事项和3个忌事项（如果数量不足，则全部选择）
-            const selectedYi = [];
-            const selectedJi = [];
-            
-            // 随机选择宜事项
-            for (let i = 0; i < Math.min(3, yiList.length); i++) {
-                const randomIndex = Math.floor(seededRandom(timestampSeed + i) * yiList.length);
-                if (!selectedYi.includes(yiList[randomIndex])) {
-                    selectedYi.push(yiList[randomIndex]);
-                }
-            }
-            
-            // 如果随机选择不足3个，则补充剩余
-            for (let i = 0; i < yiList.length && selectedYi.length < 3; i++) {
-                if (!selectedYi.includes(yiList[i])) {
-                    selectedYi.push(yiList[i]);
-                }
-            }
-            
-            // 随机选择忌事项
-            for (let i = 0; i < Math.min(3, jiList.length); i++) {
-                const randomIndex = Math.floor(seededRandom(timestampSeed + i + 10) * jiList.length);
-                if (!selectedJi.includes(jiList[randomIndex])) {
-                    selectedJi.push(jiList[randomIndex]);
-                }
-            }
-            
-            // 如果随机选择不足3个，则补充剩余
-            for (let i = 0; i < jiList.length && selectedJi.length < 3; i++) {
-                if (!selectedJi.includes(jiList[i])) {
-                    selectedJi.push(jiList[i]);
-                }
-            }
-            
-            return { yi: selectedYi, ji: selectedJi };
+            const idx = Math.floor(seededRandom(seed) * events.length);
+            return events[idx];
         }
 
-        // 显示签到结果
-        function showCheckInResult() {
-            const seed = getDaySeed();
-            
-            // 获取当天的随机内容
-            const weather = initializeWeather(seed);
-            const event = initializeEvents(seed);
-            const fortune = initializeFortune();
-            const guidance = generateGuidance(weather, event, fortune);
-            
-            // 构建签到结果
-            let resultHTML = '<div class="result-item">签到成功！</div>';
-            
-            resultHTML += `<div class="result-item">松鼠星球今日天气：<strong>${weather}</strong></div>`;
-            resultHTML += `<div class="result-item">松鼠星球今日事件：<strong>${event}</strong></div>`;
-            resultHTML += `<div class="result-item">今日运势：<strong>${fortune}</strong></div>`;
-            resultHTML += `<div class="result-item"><strong>宜：</strong></div>`;
-            resultHTML += '<ul class="list-item">';
-            guidance.yi.forEach(item => {
-                resultHTML += `<li>${item}</li>`;
-            });
-            resultHTML += '</ul>';
-            resultHTML += `<div class="result-item"><strong>忌：</strong></div>`;
-            resultHTML += '<ul class="list-item">';
-            guidance.ji.forEach(item => {
-                resultHTML += `<li>${item}</li>`;
-            });
-            resultHTML += '</ul>';
-            
-            // 显示结果模态框
-            document.getElementById('modalResultContent').innerHTML = resultHTML;
-            document.getElementById('resultModal').style.display = 'block';
+        function initializeFortune() {
+            const fortunes = [
+                { name: '小吉', level: 'good' },
+                { name: '中吉', level: 'great' },
+                { name: '大吉', level: 'great' },
+                { name: '小凶', level: 'bad' },
+                { name: '中凶', level: 'bad' },
+                { name: '大凶', level: 'bad' }
+            ];
+            const seed = Math.floor(Date.now() / 1000);
+            const idx = Math.floor(seededRandom(seed) * fortunes.length);
+            return fortunes[idx];
         }
-        
-        // 页面加载完成后初始化
+
+        function pickRandom(arr, seed, count) {
+            const shuffled = shuffleArray(arr, seed);
+            return shuffled.slice(0, Math.min(count, shuffled.length));
+        }
+
+        function generateGuidance(weather, event, fortune) {
+            const seed = Date.now();
+
+            const allYi = [];
+            if (weather.includes('晴') || weather.includes('和煦')) {
+                allYi.push('外出交流', '学习新知识', '拓展人脉');
+            } else if (weather.includes('雨') || weather.includes('雪')) {
+                allYi.push('室内活动', '深度思考', '整理代码');
+            } else if (weather.includes('风')) {
+                allYi.push('创新思维', '灵感创作', '代码重构');
+            } else if (weather.includes('雷') || weather.includes('暴')) {
+                allYi.push('安全第一', '风险控制', '备份数据');
+            } else {
+                allYi.push('保持常态', '稳步前进', '持续学习');
+            }
+
+            if (event.includes('调试') || event.includes('修复')) {
+                allYi.push('解决问题', '精益求精');
+            } else if (event.includes('学习') || event.includes('AI')) {
+                allYi.push('学习新知识', '探索新技术', '提升能力');
+            } else if (event.includes('设计') || event.includes('创作')) {
+                allYi.push('创意发挥', '美学追求', '用户体验');
+            }
+
+            allYi.push('编写文档', '代码审查', '技术分享');
+
+            const allJi = [];
+            if (weather.includes('晴') || weather.includes('和煦')) {
+                allJi.push('过度劳累', '忽视细节');
+            } else if (weather.includes('雨') || weather.includes('雪')) {
+                allJi.push('匆忙行动', '淋雨');
+            } else if (weather.includes('风')) {
+                allJi.push('粗心大意', '急躁冒进');
+            } else if (weather.includes('雷') || weather.includes('暴')) {
+                allJi.push('冒险尝试', '激进操作');
+            } else {
+                allJi.push('随意更改', '匆忙决定');
+            }
+
+            if (event.includes('调试') || event.includes('修复')) {
+                allJi.push('忽略错误', '急躁修复');
+            } else if (event.includes('学习') || event.includes('AI')) {
+                allJi.push('浅尝辄止', '不求甚解');
+            } else if (event.includes('设计') || event.includes('创作')) {
+                allJi.push('忽视用户', '缺乏创新');
+            }
+
+            allJi.push('熬夜', '拖沓', '忽视测试');
+
+            return {
+                yi: pickRandom([...new Set(allYi)], seed, 3),
+                ji: pickRandom([...new Set(allJi)], seed + 100, 3)
+            };
+        }
+
+        function formatDate() {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+            const w = weekdays[now.getDay()];
+            return `${y}年${m}月${d}日 星期${w}`;
+        }
+
+        function getFortuneEmoji(fortune) {
+            if (fortune.name.includes('吉')) return '\u{2728}';
+            return '\u{26A0}\u{FE0F}';
+        }
+
+        function showCheckInResult() {
+            const btn = document.getElementById('checkInBtn');
+            const btnText = btn.querySelector('.btn-text');
+            const originalText = btnText.textContent;
+
+            btn.classList.add('loading');
+            btn.disabled = true;
+            btnText.textContent = '签到中...';
+
+            setTimeout(() => {
+                const seed = getDaySeed();
+                const weather = initializeWeather(seed);
+                const event = initializeEvents(seed);
+                const fortune = initializeFortune();
+                const guidance = generateGuidance(weather, event, fortune);
+
+                document.getElementById('dateBadge').textContent = formatDate();
+
+                const fortuneClass = fortune.level === 'great' ? 'great' : fortune.level === 'bad' ? 'bad' : 'good';
+
+                const resultGrid = document.getElementById('resultGrid');
+                resultGrid.innerHTML = `
+                    <div class="result-card">
+                        <div class="result-card-icon weather">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                            </svg>
+                        </div>
+                        <div class="result-card-body">
+                            <div class="result-card-label">松鼠星球天气</div>
+                            <div class="result-card-value"><span class="highlight">${weather}</span></div>
+                        </div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-card-icon event">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                            </svg>
+                        </div>
+                        <div class="result-card-body">
+                            <div class="result-card-label">今日事件</div>
+                            <div class="result-card-value"><span class="highlight">${event}</span></div>
+                        </div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-card-icon fortune">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/>
+                            </svg>
+                        </div>
+                        <div class="result-card-body">
+                            <div class="result-card-label">今日运势</div>
+                            <div class="result-card-value">
+                                <span class="fortune-badge ${fortuneClass}">${getFortuneEmoji(fortune)} ${fortune.name}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-card-icon yi">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </div>
+                        <div class="result-card-body">
+                            <div class="result-card-label">今日宜</div>
+                            <div class="tag-list">
+                                ${guidance.yi.map(item => `<span class="tag tag-yi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>${item}</span>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-card-icon ji">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </div>
+                        <div class="result-card-body">
+                            <div class="result-card-label">今日忌</div>
+                            <div class="tag-list">
+                                ${guidance.ji.map(item => `<span class="tag tag-ji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>${item}</span>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                btn.classList.remove('loading');
+                btn.disabled = false;
+                btnText.textContent = originalText;
+
+                document.getElementById('resultModal').classList.add('active');
+                document.body.style.overflow = 'hidden';
+
+                triggerConfetti();
+            }, 800);
+        }
+
+        function triggerConfetti() {
+            const container = document.getElementById('confettiContainer');
+            const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (prefersReduced) return;
+
+            const count = 40;
+            for (let i = 0; i < count; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'confetti-piece';
+                const color = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
+                const size = 5 + Math.random() * 6;
+                const left = Math.random() * 100;
+                const duration = 1.5 + Math.random() * 2;
+                const delay = Math.random() * 0.8;
+                const shape = Math.random() > 0.5 ? '50%' : '2px';
+
+                piece.style.cssText = `
+                    left: ${left}%;
+                    width: ${size}px;
+                    height: ${size}px;
+                    background: ${color};
+                    border-radius: ${shape};
+                    animation-duration: ${duration}s;
+                    animation-delay: ${delay}s;
+                `;
+                container.appendChild(piece);
+
+                setTimeout(() => piece.remove(), (duration + delay) * 1000 + 100);
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('resultModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
-            // 签到按钮事件
             document.getElementById('checkInBtn').addEventListener('click', showCheckInResult);
-            
-            // 模态框关闭事件
-            document.querySelector('.close').addEventListener('click', function() {
-                document.getElementById('resultModal').style.display = 'none';
+
+            document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
+
+            document.getElementById('resultModal').addEventListener('click', function(e) {
+                if (e.target === this) closeModal();
             });
-            
-            // 点击模态框外部关闭
-            window.addEventListener('click', function(event) {
-                const modal = document.getElementById('resultModal');
-                if (event.target === modal) {
-                    modal.style.display = 'none';
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    const modal = document.getElementById('resultModal');
+                    if (modal.classList.contains('active')) closeModal();
                 }
             });
         });
