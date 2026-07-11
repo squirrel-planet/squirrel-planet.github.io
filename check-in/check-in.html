@@ -295,7 +295,7 @@
             background: var(--bg-card);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
-            padding: 36px 32px 32px;
+            padding: 20px 20px 16px;
             border-radius: 24px;
             width: 100%;
             max-width: 520px;
@@ -304,8 +304,7 @@
             box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
             position: relative;
             animation: modalEnter 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-            max-height: 90vh;
-            overflow-y: auto;
+            overflow: visible;
         }
 
         @keyframes modalEnter {
@@ -347,21 +346,21 @@
         }
 
         .modal-header {
-            margin-bottom: 24px;
-            padding-bottom: 20px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
             border-bottom: 1px solid var(--border-glass);
         }
 
         .modal-header .success-icon {
-            width: 56px;
-            height: 56px;
-            margin: 0 auto 12px;
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 8px;
             display: block;
         }
 
         .modal-header h2 {
             font-family: 'Fredoka', sans-serif;
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             font-weight: 600;
             background: linear-gradient(135deg, var(--primary-light), var(--primary));
             -webkit-background-clip: text;
@@ -381,9 +380,9 @@
         }
 
         .result-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
             text-align: left;
         }
 
@@ -391,10 +390,10 @@
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border-glass);
             border-radius: 16px;
-            padding: 18px 20px;
+            padding: 12px 14px;
             display: flex;
             align-items: flex-start;
-            gap: 14px;
+            gap: 10px;
             transition: all 0.2s ease;
             cursor: default;
         }
@@ -740,6 +739,8 @@
     <div class="confetti-container" id="confettiContainer" aria-hidden="true"></div>
 
     <script>
+        const API_BASE_URL = 'https://songshu1hao.pythonanywhere.com';
+
         const CONFETTI_COLORS = ['#F97316', '#FB923C', '#FCD34D', '#22C55E', '#60A5FA', '#A855F7', '#EC4899'];
         const SEASON_EMOJI = { spring: '\u{1F33C}', summer: '\u{2600}\u{FE0F}', autumn: '\u{1F341}', winter: '\u{2744}\u{FE0F}' };
 
@@ -931,91 +932,42 @@
             btn.disabled = true;
             btnText.textContent = '签到中...';
 
-            setTimeout(() => {
-                const seed = getDaySeed();
-                const weather = initializeWeather(seed);
-                const event = initializeEvents(seed);
-                const fortune = initializeFortune();
-                const guidance = generateGuidance(weather, event, fortune);
-
-                document.getElementById('dateBadge').textContent = formatDate();
-
-                const fortuneClass = fortune.level === 'great' ? 'great' : fortune.level === 'bad' ? 'bad' : 'good';
-
-                const resultGrid = document.getElementById('resultGrid');
-                resultGrid.innerHTML = `
-                    <div class="result-card">
-                        <div class="result-card-icon weather">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-                            </svg>
-                        </div>
-                        <div class="result-card-body">
-                            <div class="result-card-label">松鼠星球天气</div>
-                            <div class="result-card-value"><span class="highlight">${weather}</span></div>
-                        </div>
-                    </div>
-                    <div class="result-card">
-                        <div class="result-card-icon event">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                            </svg>
-                        </div>
-                        <div class="result-card-body">
-                            <div class="result-card-label">今日事件</div>
-                            <div class="result-card-value"><span class="highlight">${event}</span></div>
-                        </div>
-                    </div>
-                    <div class="result-card">
-                        <div class="result-card-icon fortune">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/>
-                            </svg>
-                        </div>
-                        <div class="result-card-body">
-                            <div class="result-card-label">今日运势</div>
-                            <div class="result-card-value">
-                                <span class="fortune-badge ${fortuneClass}">${getFortuneEmoji(fortune)} ${fortune.name}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="result-card">
-                        <div class="result-card-icon yi">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                        </div>
-                        <div class="result-card-body">
-                            <div class="result-card-label">今日宜</div>
-                            <div class="tag-list">
-                                ${guidance.yi.map(item => `<span class="tag tag-yi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>${item}</span>`).join('')}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="result-card">
-                        <div class="result-card-icon ji">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                            </svg>
-                        </div>
-                        <div class="result-card-body">
-                            <div class="result-card-label">今日忌</div>
-                            <div class="tag-list">
-                                ${guidance.ji.map(item => `<span class="tag tag-ji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>${item}</span>`).join('')}
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                btn.classList.remove('loading');
-                btn.disabled = false;
-                btnText.textContent = originalText;
-
-                document.getElementById('resultModal').classList.add('active');
-                document.body.style.overflow = 'hidden';
-
-                triggerConfetti();
-            }, 800);
+            fetch(API_BASE_URL + '/api/check-in', { method: 'POST', credentials: 'include' })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.status !== 'success') {
+                        if (data.message === '未登录') {
+                            window.location.href = '../login_or_signup/login_or_signup.html';
+                            return;
+                        }
+                        if (data.message === '今日已签到') {
+                            data = { status: 'success', coins_earned: 0, coins: 0, checkin_count: 0, consecutive_checkins: 0 };
+                            return fetch(API_BASE_URL + '/api/user/info', { credentials: 'include' })
+                                .then(function(r) { return r.json(); })
+                                .then(function(info) {
+                                    if (info.status === 'success') {
+                                        data.coins = info.coins;
+                                        data.checkin_count = info.checkin_count;
+                                        data.consecutive_checkins = info.consecutive_checkins;
+                                    }
+                                    return showResult(data, true);
+                                });
+                        }
+                        btn.classList.remove('loading');
+                        btn.disabled = false;
+                        btnText.textContent = originalText;
+                        alert(data.message || '签到失败');
+                        return;
+                    }
+                    showResult(data, false);
+                })
+                .catch(function(err) {
+                    console.error('签到请求失败:', err);
+                    btn.classList.remove('loading');
+                    btn.disabled = false;
+                    btnText.textContent = originalText;
+                    alert('网络错误，请稍后重试');
+                });
         }
 
         function triggerConfetti() {
@@ -1052,6 +1004,131 @@
         function closeModal() {
             document.getElementById('resultModal').classList.remove('active');
             document.body.style.overflow = '';
+        }
+
+        function alert(msg) {
+            var m = document.getElementById('resultModal');
+            var g = document.getElementById('resultGrid');
+            g.innerHTML = '<div class="result-card" style="justify-content:center;padding:24px"><div class="result-card-value" style="color:var(--danger);font-size:1.1rem">' + msg + '</div></div>';
+            document.querySelector('#resultModal .modal-header h2').textContent = '提示';
+            m.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function showResult(data, alreadyChecked) {
+            var coins_earned = alreadyChecked ? 0 : (data.coins_earned || 0);
+            var consecutive = data.consecutive_checkins || 0;
+
+            setTimeout(function() {
+                var seed = getDaySeed();
+                var weather = initializeWeather(seed);
+                var event = initializeEvents(seed);
+                var fortune = initializeFortune();
+                var guidance = generateGuidance(weather, event, fortune);
+
+                document.querySelector('#resultModal .modal-header h2').textContent = alreadyChecked ? '今日已签到' : '签到成功！';
+                document.getElementById('dateBadge').textContent = formatDate();
+
+                var fortuneClass = fortune.level === 'great' ? 'great' : fortune.level === 'bad' ? 'bad' : 'good';
+
+                var resultGrid = document.getElementById('resultGrid');
+                resultGrid.innerHTML = [
+                    '<div class="result-card">',
+                    '  <div class="result-card-icon" style="background:rgba(34,197,94,0.12);color:#22C55E">',
+                    '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',
+                    '      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+                    '    </svg>',
+                    '  </div>',
+                    '  <div class="result-card-body">',
+                    '    <div class="result-card-label">连续签到</div>',
+                    '    <div class="result-card-value"><span class="highlight" style="color:#22C55E;font-family:Fredoka">' + consecutive + ' 天</span> <span style="color:var(--text-dim)">累计: ' + data.checkin_count + ' 天</span></div>',
+                    '  </div>',
+                    '</div>',
+                    '<div class="result-card">',
+                    '  <div class="result-card-icon event">',
+                    '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',
+                    '      <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>',
+                    '    </svg>',
+                    '  </div>',
+                    '  <div class="result-card-body">',
+                    '    <div class="result-card-label">松鼠星球天气</div>',
+                    '    <div class="result-card-value"><span class="highlight">' + weather + '</span></div>',
+                    '  </div>',
+                    '</div>',
+                    '<div class="result-card">',
+                    '  <div class="result-card-icon event">',
+                    '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',
+                    '      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+                    '    </svg>',
+                    '  </div>',
+                    '  <div class="result-card-body">',
+                    '    <div class="result-card-label">今日事件</div>',
+                    '    <div class="result-card-value"><span class="highlight">' + event + '</span></div>',
+                    '  </div>',
+                    '</div>',
+                    '<div class="result-card">',
+                    '  <div class="result-card-icon fortune">',
+                    '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',
+                    '      <circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/>',
+                    '    </svg>',
+                    '  </div>',
+                    '  <div class="result-card-body">',
+                    '    <div class="result-card-label">今日运势</div>',
+                    '    <div class="result-card-value">',
+                    '      <span class="fortune-badge ' + fortuneClass + '">' + getFortuneEmoji(fortune) + ' ' + fortune.name + '</span>',
+                    '    </div>',
+                    '  </div>',
+                    '</div>',
+                    '<div class="result-card">',
+                    '  <div class="result-card-icon yi">',
+                    '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',
+                    '      <polyline points="20 6 9 17 4 12"/>',
+                    '    </svg>',
+                    '  </div>',
+                    '  <div class="result-card-body">',
+                    '    <div class="result-card-label">今日宜</div>',
+                    '    <div class="tag-list">',
+                    '      ' + guidance.yi.map(function(item) { return '<span class=\"tag tag-yi\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"/></svg>' + item + '</span>'; }).join(''),
+                    '    </div>',
+                    '  </div>',
+                    '</div>',
+                    '<div class="result-card">',
+                    '  <div class="result-card-icon ji">',
+                    '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',
+                    '      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+                    '    </svg>',
+                    '  </div>',
+                    '  <div class="result-card-body">',
+                    '    <div class="result-card-label">今日忌</div>',
+                    '    <div class="tag-list">',
+                    '      ' + guidance.ji.map(function(item) { return '<span class=\"tag tag-ji\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"/><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"/></svg>' + item + '</span>'; }).join(''),
+                    '    </div>',
+                    '  </div>',
+                    '</div>',
+                    '<div class="result-card" style="grid-column:1/-1">',
+                    '  <div class="result-card-icon" style="background:rgba(249,215,77,0.12);color:#FCD34D">',
+                    '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',
+                    '      <circle cx="12" cy="12" r="10"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>',
+                    '    </svg>',
+                    '  </div>',
+                    '  <div class="result-card-body">',
+                    '    <div class="result-card-label">松鼠币 <span style="color:var(--text-muted);font-size:0.75rem">(签到 1~5/天)</span></div>',
+                    '    <div class="result-card-value"><span style="color:#FCD34D;font-family:Fredoka;font-size:1.3rem">' + (alreadyChecked ? '' : '+' + coins_earned + ' ') + '</span><span class="highlight" style="color:#FCD34D;font-family:Fredoka">' + data.coins + ' 🪙</span></div>',
+                    '  </div>',
+                    '</div>'
+                ].join('\n');
+
+                var btn = document.getElementById('checkInBtn');
+                var btnText = btn.querySelector('.btn-text');
+                btn.classList.remove('loading');
+                btn.disabled = false;
+                btnText.textContent = btnText.getAttribute('data-original') || '开始签到';
+
+                document.getElementById('resultModal').classList.add('active');
+                document.body.style.overflow = 'hidden';
+
+                triggerConfetti();
+            }, 600);
         }
 
         document.addEventListener('DOMContentLoaded', function() {

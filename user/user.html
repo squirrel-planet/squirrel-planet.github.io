@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户中心 - 松鼠星球</title>
+    <link rel="icon" type="image/png" href="../logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&family=Russo+One&family=Noto+Sans+SC:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --orange-primary: #FF8C00;
+            --orange-light: #FFA500;
+            --orange-dark: #FF6B00;
+            --orange-glow: #FFB347;
+            --bg-dark: #0A0E17;
+            --bg-card: #121822;
+            --text-light: #F0F6FC;
+            --text-dim: #8892A4;
+            --text-muted: #5A6478;
+            --code-green: #00FF9D;
+            --accent-purple: #A855F7;
+            --accent-pink: #EC4899;
+            --font-display: 'Russo One', 'Noto Sans SC', sans-serif;
+            --font-body: 'Chakra Petch', 'Noto Sans SC', sans-serif;
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg-dark: #F5F0EB;
+                --bg-card: #FFFFFF;
+                --text-light: #1A1A2E;
+                --text-dim: #5A6478;
+                --text-muted: #8B949E;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        html::-webkit-scrollbar {
+            display: none;
+        }
+
+        html {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+
+        #smooth-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        #smooth-content {
+            height: 100%;
+        }
+
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            bottom: -10px;
+            border-radius: 50%;
+            animation: floatUp linear infinite;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.6;
+            }
+
+            90% {
+                opacity: 0.3;
+            }
+
+            100% {
+                transform: translateY(-100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 999;
+            padding: 0 24px;
+            background: rgba(10, 14, 23, 0.85);
+            backdrop-filter: blur(20px) saturate(1.5);
+            -webkit-backdrop-filter: blur(20px) saturate(1.5);
+            border-bottom: 1px solid rgba(255, 140, 0, 0.15);
+        }
+
+        .nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 72px;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--orange-light), var(--orange-primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-logo img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-light);
+            background: rgba(255, 140, 0, 0.1);
+        }
+
+        .nav-links a.active {
+            color: var(--orange-primary);
+            background: rgba(255, 140, 0, 0.12);
+        }
+
+        .nav-links .logout-btn {
+            color: #ffaa00;
+        }
+
+        .nav-links .logout-btn:hover {
+            background: rgba(255, 170, 95, 0.1);
+        }
+
+        .container {
+            max-width: none;
+            width: 100%;
+            padding: 100px 40px 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content-grid {
+            max-width: none !important;
+        }
+
+        /* Welcome header */
+        .welcome-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            padding: 32px 40px;
+            background: linear-gradient(135deg, rgba(255, 140, 0, 0.08), rgba(168, 85, 247, 0.05));
+            border-radius: 20px;
+            border: 1px solid rgba(255, 140, 0, 0.15);
+        }
+
+        .welcome-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .welcome-text h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--orange-light), var(--orange-primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .welcome-text p {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+            margin-top: 4px;
+        }
+
+        .welcome-badge {
+            padding: 8px 20px;
+            border-radius: 20px;
+            background: rgba(0, 255, 157, 0.1);
+            border: 1px solid rgba(0, 255, 157, 0.2);
+            color: var(--code-green);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* Grid layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 28px;
+            border: 1px solid rgba(255, 140, 0, 0.1);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255, 140, 0, 0.3);
+        }
+
+        .stat-card .stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .stat-card .stat-icon svg {
+            width: 22px;
+            height: 22px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-card .stat-label {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        .stat-card.orange .stat-icon {
+            background: rgba(255, 140, 0, 0.12);
+            color: var(--orange-primary);
+        }
+
+        .stat-card.orange .stat-value {
+            color: var(--orange-primary);
+        }
+
+        .stat-card.green .stat-icon {
+            background: rgba(0, 255, 157, 0.12);
+            color: var(--code-green);
+        }
+
+        .stat-card.green .stat-value {
+            color: var(--code-green);
+        }
+
+        .stat-card.purple .stat-icon {
+            background: rgba(168, 85, 247, 0.12);
+            color: var(--accent-purple);
+        }
+
+        .stat-card.purple .stat-value {
+            color: var(--accent-purple);
+        }
+
+        /* Content grid */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .panel {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 28px;
+            border: 1px solid rgba(255, 140, 0, 0.08);
+        }
+
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-light);
+        }
+
+        .panel-title svg {
+            width: 20px;
+            height: 20px;
+            stroke: var(--orange-primary);
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .activity-list {
+            list-style: none;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-top: 6px;
+            flex-shrink: 0;
+        }
+
+        .activity-dot.gold {
+            background: var(--orange-primary);
+        }
+
+        .activity-dot.green {
+            background: var(--code-green);
+        }
+
+        .activity-dot.purple {
+            background: var(--accent-purple);
+        }
+
+        .activity-dot.pink {
+            background: var(--accent-pink);
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-text {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .activity-text span {
+            color: var(--orange-primary);
+            font-weight: 600;
+        }
+
+        .activity-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .quick-links {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .quick-link {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 20px 24px;
+            border-radius: 14px;
+            background: rgba(255, 140, 0, 0.04);
+            border: 1px solid rgba(255, 140, 0, 0.08);
+            text-decoration: none;
+            color: var(--text-light);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .quick-link:hover {
+            background: rgba(255, 140, 0, 0.1);
+            border-color: rgba(255, 140, 0, 0.25);
+            transform: translateX(4px);
+        }
+
+        .quick-link svg {
+            width: 22px;
+            height: 22px;
+            stroke: var(--orange-primary);
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            flex-shrink: 0;
+        }
+
+        .quick-link .ql-content {
+            flex: 1;
+        }
+
+        .quick-link .ql-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .quick-link .ql-desc {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-top: 2px;
+        }
+
+        .quick-link .ql-arrow {
+            color: var(--text-muted);
+            transition: transform 0.3s ease;
+        }
+
+        .quick-link:hover .ql-arrow {
+            transform: translateX(4px);
+            color: var(--orange-primary);
+        }
+
+        /* Account settings panel */
+        .settings-list {
+            list-style: none;
+        }
+
+        .settings-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .settings-item:last-child {
+            border-bottom: none;
+        }
+
+        .settings-label {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        .settings-value {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .settings-edit {
+            color: var(--orange-primary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .settings-edit:hover {
+            opacity: 0.7;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            box-shadow: 0 20px 60px rgba(255, 140, 0, 0.3);
+            text-align: center;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .modal-message {
+            font-size: 0.95rem;
+            color: var(--text-dim);
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .modal-btn {
+            padding: 12px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: var(--font-body);
+            background: linear-gradient(135deg, var(--orange-primary), var(--orange-dark));
+            color: white;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 140, 0, 0.4);
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .welcome-section {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+
+            .welcome-left {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .container {
+                padding: 80px 16px 24px;
+            }
+
+            .nav {
+                padding: 0 12px;
+            }
+
+            .nav-links a {
+                font-size: 0.85rem;
+                padding: 6px 10px;
+            }
+        }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "gsap": "https://esm.sh/gsap@3.12.5",
+                "gsap/ScrollTrigger": "https://esm.sh/gsap@3.12.5/ScrollTrigger"
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <div id="particles"></div>
+
+    <div id="smooth-wrapper">
+        <div id="smooth-content">
+
+            <nav class="nav">
+                <div class="nav-inner">
+                    <a href="../index.html" class="nav-logo">
+                        <img src="../logo.png" alt="松鼠星球">
+                        <span>松鼠星球</span>
+                    </a>
+                    <div class="nav-links">
+                        <a href="#" id="logoutBtn" class="logout-btn">退出登录</a>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="container">
+                <div class="welcome-section">
+                    <div class="welcome-left">
+                        <div class="welcome-text">
+                            <h1 id="welcomeGreeting">欢迎回来，松鼠星人！</h1>
+                            <p id="userEmailDisplay">squirrel@squirrel-planet.space</p>
+                        </div>
+                    </div>
+                    <div class="welcome-badge">已认证 · 星球居民</div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="stat-card orange">
+                        <div class="stat-icon">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">累计签到</div>
+                    </div>
+                    <div class="stat-card purple">
+                        <div class="stat-icon">
+                            <svg viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                            </svg>
+                        </div>
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">松鼠币</div>
+                    </div>
+                    <div class="stat-card green">
+                        <div class="stat-icon">
+                            <svg viewBox="0 0 24 24">
+                                <rect x="3" y="3" width="7" height="7" />
+                                <rect x="14" y="3" width="7" height="7" />
+                                <rect x="3" y="14" width="7" height="7" />
+                                <rect x="14" y="14" width="7" height="7" />
+                            </svg>
+                        </div>
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">连续签到</div>
+                    </div>
+                </div>
+
+                <div class="content-grid">
+                    <div class="panel">
+                        <div class="panel-title">
+                            <svg viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="10" />
+                                <polyline points="12 6 12 12 16 14" />
+                            </svg>
+                            快捷入口
+                        </div>
+                        <div class="quick-links">
+                            <a href="../check-in/check-in.html" class="quick-link">
+                                <svg viewBox="0 0 24 24">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                                    <line x1="16" y1="2" x2="16" y2="6" />
+                                    <line x1="8" y1="2" x2="8" y2="6" />
+                                    <line x1="3" y1="10" x2="21" y2="10" />
+                                </svg>
+                                <div class="ql-content">
+                                    <div class="ql-title">每日签到</div>
+                                    <div class="ql-desc">打卡获取松鼠币</div>
+                                </div>
+                                <svg class="ql-arrow" width="16" height="16" viewBox="0 0 24 24">
+                                    <line x1="5" y1="12" x2="19" y2="12" />
+                                    <polyline points="12 5 19 12 12 19" />
+                                </svg>
+                            </a>
+                            <a href="../games/games.html" class="quick-link">
+                                <svg viewBox="0 0 24 24">
+                                    <rect x="2" y="6" width="20" height="12" rx="2" />
+                                    <line x1="6" y1="12" x2="6" y2="12" />
+                                    <line x1="10" y1="12" x2="10" y2="12" />
+                                    <line x1="14" y1="12" x2="14" y2="12" />
+                                    <line x1="18" y1="12" x2="18" y2="12" />
+                                </svg>
+                                <div class="ql-content">
+                                    <div class="ql-title">松鼠游戏库</div>
+                                    <div class="ql-desc">畅玩各种小游戏</div>
+                                </div>
+                                <svg class="ql-arrow" width="16" height="16" viewBox="0 0 24 24">
+                                    <line x1="5" y1="12" x2="19" y2="12" />
+                                    <polyline points="12 5 19 12 12 19" />
+                                </svg>
+                            </a>
+                            <a href="../story/story.html" class="quick-link">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                    <polyline points="14 2 14 8 20 8" />
+                                    <line x1="16" y1="13" x2="8" y2="13" />
+                                    <line x1="16" y1="17" x2="8" y2="17" />
+                                </svg>
+                                <div class="ql-content">
+                                    <div class="ql-title">星球故事</div>
+                                    <div class="ql-desc">探索松鼠星球的传说</div>
+                                </div>
+                                <svg class="ql-arrow" width="16" height="16" viewBox="0 0 24 24">
+                                    <line x1="5" y1="12" x2="19" y2="12" />
+                                    <polyline points="12 5 19 12 12 19" />
+                                </svg>
+                            </a>
+                        </div>
+
+                        <div class="panel-title" style="margin-top: 24px;">
+                            <svg viewBox="0 0 24 24">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                            账户设置
+                        </div>
+                        <ul class="settings-list">
+                            <li class="settings-item">
+                                <span class="settings-label">用户名</span>
+                                <span class="settings-value" id="settingsUsername">松鼠星人</span>
+                                <a class="settings-edit" id="editUsername">修改</a>
+                            </li>
+                            <li class="settings-item">
+                                <span class="settings-label">邮箱</span>
+                                <span class="settings-value" id="settingsEmail">squirrel@squirrel-planet.space</span>
+                                <a class="settings-edit" id="editEmail">修改</a>
+                            </li>
+                            <li class="settings-item">
+                                <span class="settings-label">密码</span>
+                                <span class="settings-value">••••••••</span>
+                                <a class="settings-edit" id="editPassword">修改</a>
+                            </li>
+                            <li class="settings-item" style="border-bottom: none; margin-top: 8px;">
+                                <span class="settings-label" style="color: #EF4444;">注销账户</span>
+                                <a class="settings-edit" id="deleteAccount" style="color: #EF4444;">注销</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-overlay" id="modalOverlay">
+                <div class="modal-content">
+                    <div class="modal-title" id="modalTitle">提示</div>
+                    <div class="modal-message" id="modalMessage"></div>
+                    <button class="modal-btn" id="modalBtn">确定</button>
+                </div>
+            </div>
+
+            <div class="modal-overlay" id="deleteModal">
+                <div class="modal-content">
+                    <div class="modal-title" style="color: #EF4444;">注销账户</div>
+                    <div class="modal-message">此操作不可撤销，请输入密码确认</div>
+                    <input type="password" id="deletePasswordInput" class="input-field" placeholder="请输入密码"
+                        style="width:100%;padding:12px 16px;border-radius:10px;border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.05);color:var(--text-light);font-size:1rem;outline:none;margin-bottom:20px;font-family:var(--font-body);">
+                    <div style="display:flex;gap:12px;">
+                        <button class="modal-btn" id="deleteCancelBtn"
+                            style="flex:1;background:rgba(255,255,255,0.08);color:var(--text-light);">取消</button>
+                        <button class="modal-btn" id="deleteConfirmBtn"
+                            style="flex:1;background:linear-gradient(135deg,#EF4444,#DC2626);">确认注销</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script type="module">
+        import gsap from 'gsap';
+        import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+        gsap.registerPlugin(ScrollTrigger);
+
+        const API_BASE_URL = 'https://songshu1hao.pythonanywhere.com';
+        const FETCH_OPT = { credentials: 'include' };
+
+        const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const sw = document.getElementById('smooth-wrapper');
+        const sc = document.getElementById('smooth-content');
+
+        // Smooth scroll
+        if (!isReduced && sw && sc) {
+            const ss = {
+                current: 0, target: 0, raf: null,
+                getMax() { return Math.max(0, sc.scrollHeight - window.innerHeight); },
+                lerp() {
+                    ss.current += (ss.target - ss.current) * 0.08;
+                    sc.style.transform = 'translateY(' + (-ss.current) + 'px)';
+                    ScrollTrigger.update();
+                    if (Math.abs(ss.current - ss.target) > 0.5) ss.raf = requestAnimationFrame(ss.lerp);
+                    else ss.raf = null;
+                },
+                scrollTo(pos) {
+                    ss.target = Math.max(0, Math.min(pos, ss.getMax()));
+                    if (!ss.raf) ss.raf = requestAnimationFrame(ss.lerp);
+                }
+            };
+            window.__ss = ss;
+
+            ScrollTrigger.scrollerProxy(sw, {
+                scrollTop(value) {
+                    if (arguments.length) {
+                        ss.target = value;
+                        ss.target = Math.max(0, Math.min(ss.target, ss.getMax()));
+                        if (!ss.raf) ss.raf = requestAnimationFrame(ss.lerp);
+                    }
+                    return ss.current;
+                }
+            });
+
+            ScrollTrigger.defaults({ scroller: sw });
+
+            sw.addEventListener('wheel', function (e) {
+                e.preventDefault();
+                ss.target += e.deltaY;
+                ss.target = Math.max(0, Math.min(ss.target, ss.getMax()));
+                if (!ss.raf) ss.raf = requestAnimationFrame(ss.lerp);
+            }, { passive: false });
+
+            let touchStartY = 0;
+            sw.addEventListener('touchstart', function (e) {
+                touchStartY = e.touches[0].clientY;
+            }, { passive: true });
+            sw.addEventListener('touchmove', function (e) {
+                const dy = touchStartY - e.touches[0].clientY;
+                touchStartY = e.touches[0].clientY;
+                ss.target += dy;
+                ss.target = Math.max(0, Math.min(ss.target, ss.getMax()));
+                if (!ss.raf) ss.raf = requestAnimationFrame(ss.lerp);
+            }, { passive: true });
+
+            window.addEventListener('resize', function () { ss.target = Math.min(ss.target, ss.getMax()); });
+        }
+
+        // Entrance animations
+        if (!isReduced) {
+            gsap.from('.nav', { y: -80, duration: 0.8, ease: 'power3.out' });
+            gsap.from('.welcome-section', { y: 40, opacity: 0, duration: 0.8, ease: 'power3.out', delay: 0.2 });
+            gsap.from('.stat-card', { y: 30, opacity: 0, duration: 0.6, ease: 'power3.out', stagger: 0.1, delay: 0.3 });
+            gsap.from('.panel', { y: 30, opacity: 0, duration: 0.6, ease: 'power3.out', stagger: 0.12, delay: 0.4 });
+        }
+
+        function showModal(title, message, callback) {
+            const overlay = document.getElementById('modalOverlay');
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = message;
+            overlay.classList.add('show');
+            const mc = document.querySelector('.modal-content');
+            if (mc) gsap.fromTo(mc, { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(1.7)' });
+            document.getElementById('modalBtn').onclick = function () {
+                overlay.classList.remove('show');
+                if (callback) callback();
+            };
+            overlay.onclick = function (e) {
+                if (e.target === overlay) {
+                    overlay.classList.remove('show');
+                    if (callback) callback();
+                }
+            };
+        }
+
+        function alert(msg, callback) { showModal('提示', msg, callback); }
+        function error(msg, callback) { showModal('错误', msg, callback); }
+
+        async function fetchUserProfile() {
+            try {
+                const res = await fetch(API_BASE_URL + '/api/user/info', FETCH_OPT);
+                const data = await res.json();
+                if (data.status !== 'success') {
+                    window.location.replace('not-logged-in.html');
+                    return;
+                }
+                document.getElementById('welcomeGreeting').textContent = '欢迎回来，' + data.username + '！';
+                document.getElementById('userEmailDisplay').textContent = data.email || '未绑定邮箱';
+                document.getElementById('settingsUsername').textContent = data.username;
+                document.getElementById('settingsEmail').textContent = data.email || '未绑定';
+                document.querySelectorAll('.stat-card')[0].querySelector('.stat-value').textContent = data.checkin_count ?? 0;
+                document.querySelectorAll('.stat-card')[1].querySelector('.stat-value').textContent = data.coins ?? 0;
+                document.querySelectorAll('.stat-card')[2].querySelector('.stat-value').textContent = data.consecutive_checkins ?? 0;
+            } catch (err) {
+                console.warn('无法连接后端', err);
+                window.location.replace('not-logged-in.html');
+            }
+        }
+
+        fetchUserProfile();
+
+        document.getElementById('logoutBtn').addEventListener('click', function (e) {
+            e.preventDefault();
+            showModal('退出登录', '确定要退出登录吗？', async function () {
+                try { await fetch(API_BASE_URL + '/api/logout', FETCH_OPT); } catch (_) {}
+                window.location.href = '../login_or_signup/login_or_signup.html';
+            });
+        });
+
+        // Particles
+        (function () {
+            const container = document.getElementById('particles');
+            const colors = ['#FF8C00', '#FFA500', '#FFB347', '#00FF9D', '#A855F7'];
+            for (let i = 0; i < 30; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                const size = 2 + Math.random() * 4;
+                p.style.cssText = [
+                    'left:' + (Math.random() * 100) + '%',
+                    'width:' + size + 'px',
+                    'height:' + size + 'px',
+                    'background:' + colors[Math.floor(Math.random() * colors.length)],
+                    'animation-delay:' + (Math.random() * 15) + 's',
+                    'animation-duration:' + (10 + Math.random() * 12) + 's'
+                ].join(';');
+                container.appendChild(p);
+            }
+        })();
+
+        // Edit handlers
+        document.getElementById('editUsername').addEventListener('click', function (e) {
+            e.preventDefault();
+            alert('用户名修改功能即将上线，敬请期待！');
+        });
+        document.getElementById('editEmail').addEventListener('click', function (e) {
+            e.preventDefault();
+            alert('邮箱修改功能即将上线，敬请期待！');
+        });
+        document.getElementById('editPassword').addEventListener('click', function (e) {
+            e.preventDefault();
+            window.location.href = '../login_or_signup/login_or_signup.html?mode=change_password';
+        });
+
+        // Delete account
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        const deleteModal = document.getElementById('deleteModal');
+        const deletePasswordInput = document.getElementById('deletePasswordInput');
+        const deleteCancelBtn = document.getElementById('deleteCancelBtn');
+        const deleteConfirmBtn = document.getElementById('deleteConfirmBtn');
+
+        document.getElementById('deleteAccount').addEventListener('click', function (e) {
+            e.preventDefault();
+            deletePasswordInput.value = '';
+            deleteModal.classList.add('show');
+            if (!isReduced) {
+                const mc = deleteModal.querySelector('.modal-content');
+                gsap.fromTo(mc, { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(1.7)' });
+            }
+        });
+
+        function closeDeleteModal() {
+            deleteModal.classList.remove('show');
+        }
+
+        deleteCancelBtn.addEventListener('click', closeDeleteModal);
+        deleteModal.addEventListener('click', function (e) {
+            if (e.target === deleteModal) closeDeleteModal();
+        });
+
+        deleteConfirmBtn.addEventListener('click', async function () {
+            const password = deletePasswordInput.value;
+            if (!password) {
+                alert('请输入密码');
+                return;
+            }
+            const passwordHash = await hashPassword(password);
+            deleteConfirmBtn.disabled = true;
+            deleteConfirmBtn.textContent = '注销中...';
+            try {
+                const res = await fetch(API_BASE_URL + '/api/user/delete?password=' + encodeURIComponent(passwordHash), FETCH_OPT);
+                const data = await res.json();
+                if (data.status === 'success') {
+                    closeDeleteModal();
+                    showModal('提示', '账户已注销', function () {
+                        window.location.href = '../login_or_signup/login_or_signup.html';
+                    });
+                } else {
+                    alert(data.message || '注销失败');
+                }
+            } catch (err) {
+                alert('网络错误，请稍后重试');
+                console.error(err);
+            } finally {
+                deleteConfirmBtn.disabled = false;
+                deleteConfirmBtn.textContent = '确认注销';
+            }
+        });
+    </script>
+</body>
+
+</html>

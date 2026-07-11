@@ -844,7 +844,7 @@
                 .join('&');
             const url = `${API_BASE_URL}/auth?${queryString}`;
             console.log('请求:', url);
-            const res = await fetch(url);
+            const res = await fetch(url, { credentials: 'include' });
             const data = await res.json();
             return data;
         }
@@ -948,9 +948,8 @@
                 });
 
 if (result.status === 'success') {
-                    // 登录成功处理
                     success('登录成功！', () => {
-                        window.location.href = '../index.html';
+                        window.location.href = '../user/user.html';
                     });
                 } else {
                     error(result.message || '登录失败');
