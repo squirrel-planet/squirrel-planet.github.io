@@ -1110,6 +1110,14 @@
                     <div class="command-desc">将工作区顶部的蜜蜂放回蜂巢。保持蜂巢的秩序。</div>
                 </div>
                 <div class="command-item animate-on-scroll">
+                    <div class="command-name">fly</div>
+                    <div class="command-desc">将蜂巢顶部的蜜蜂移动到天空区（中转站）。配合 <code>fly back</code> 可以灵活调度蜜蜂。</div>
+                </div>
+                <div class="command-item animate-on-scroll">
+                    <div class="command-name">fly back</div>
+                    <div class="command-desc">将天空区顶部的蜜蜂放回蜂巢。与 <code>fly</code> 配对使用。</div>
+                </div>
+                <div class="command-item animate-on-scroll">
                     <div class="command-name">get honey</div>
                     <div class="command-desc">让工蜂获取 1 点蜂蜜。要求工作区顶部必须是工蜂。</div>
                 </div>
@@ -1124,16 +1132,16 @@
                     <div class="command-desc">将蜂巢顶部的 bee 设置为工蜂。工蜂可以执行计算和输出等任务。有值的蜜蜂不能设置为工蜂。</div>
                 </div>
                 <div class="command-item animate-on-scroll">
-                    <div class="command-name">set value '*' / set value "*"</div>
-                    <div class="command-desc">为蜂巢顶部的蜜蜂设置一个单字符值。值可以用单引号包裹或直接写。</div>
+                    <div class="command-name">set value 'x' / set value 1234</div>
+                    <div class="command-desc">为蜂巢顶部的蜜蜂设置值。字符用单引号包裹（如 <code>'a'</code>），数字直接写（如 <code>2024</code>），支持多位数。</div>
                 </div>
                 <div class="command-item animate-on-scroll">
                     <div class="command-name">set value input</div>
-                    <div class="command-desc">通过输入为蜂巢顶部的蜜蜂设置一个单字符值。</div>
+                    <div class="command-desc">从输入读取值。数字串→整数类型，单字符→字符类型（C++ 风格贪婪解析）。</div>
                 </div>
                 <div class="command-item animate-on-scroll">
                     <div class="command-name">set value random</div>
-                    <div class="command-desc">为蜂巢顶部的蜜蜂设置一个随机数字值（0-9）。</div>
+                    <div class="command-desc">为蜂巢顶部的蜜蜂设置一个随机数字（0-9），整数类型。</div>
                 </div>
                 <div class="command-item animate-on-scroll">
                     <div class="command-name">output</div>
@@ -1143,19 +1151,19 @@
             <div id="arithmetic-commands" class="command-grid" style="display: none;">
                 <div class="command-item animate-on-scroll">
                     <div class="command-name">compute +</div>
-                    <div class="command-desc">加法运算。蜂巢顶部两个数字相加，结果存入 next_bee_value。</div>
+                    <div class="command-desc">加法运算。蜂巢顶部两个整数相加，结果存入 next_bee_value（仅整数类型可运算）。</div>
                 </div>
                 <div class="command-item animate-on-scroll">
                     <div class="command-name">compute -</div>
-                    <div class="command-desc">减法运算。蜂巢顶部两个数字相减（顶部减第二顶）。</div>
+                    <div class="command-desc">减法运算。蜂巢顶部两个整数相减（顶部减第二顶，仅整数类型可运算）。</div>
                 </div>
                 <div class="command-item animate-on-scroll">
                     <div class="command-name">compute *</div>
-                    <div class="command-desc">乘法运算。蜂巢顶部两个数字相乘。</div>
+                    <div class="command-desc">乘法运算。蜂巢顶部两个整数相乘（仅整数类型可运算）。</div>
                 </div>
                 <div class="command-item animate-on-scroll">
                     <div class="command-name">compute /</div>
-                    <div class="command-desc">除法运算。蜂巢顶部两个数字相除。</div>
+                    <div class="command-desc">除法运算。蜂巢顶部两个整数相除（仅整数类型可运算）。</div>
                 </div>
             </div>
             <div id="control-commands" class="command-grid" style="display: none;">
@@ -1165,7 +1173,7 @@
                 </div>
                 <div class="command-item animate-on-scroll">
                     <div class="command-name">judgment start / judgment end</div>
-                    <div class="command-desc">条件判断结构。检查蜂巢顶部蜜蜂的值是否为非 '0'。要求工作区顶部必须是工蜂。</div>
+                    <div class="command-desc">条件判断结构。检查蜂巢顶部蜜蜂的值是否为非 '0' 或非 0（兼容整数类型）。要求工作区顶部必须是工蜂。</div>
                 </div>
                 <div class="command-item animate-on-scroll">
                     <div class="command-name">give up</div>
@@ -1178,10 +1186,6 @@
                 <div class="command-item animate-on-scroll">
                     <div class="command-name">do not slack</div>
                     <div class="command-desc">防止工作蜂在指令执行后自动偷懒，效果持续 5 条指令。</div>
-                </div>
-                <div class="command-item animate-on-scroll">
-                    <div class="command-name">swap</div>
-                    <div class="command-desc">交换工作区顶部两项的位置。</div>
                 </div>
                 <div class="command-item animate-on-scroll">
                     <div class="command-name">error</div>
@@ -1221,12 +1225,14 @@
 <span class="code-line"><span class="code-keyword">please</span> <span class="code-function">set type worker bee</span></span>
 <span class="code-line"><span class="code-keyword">please</span> <span class="code-function">call</span></span>
 <span class="code-line code-keyword">do not give up</span>
-<span class="code-line code-function">swap</span>
+<span class="code-line code-function">go back</span>
+<span class="code-line code-function">fly</span>
 <span class="code-line"><span class="code-keyword">please</span> <span class="code-function">lay egg</span></span>
 <span class="code-line code-function">sleep</span>
 <span class="code-line code-function">eat</span>
 <span class="code-line code-keyword">do not give up</span>
-<span class="code-line"><span class="code-keyword">please</span> <span class="code-function">swap</span></span>
+<span class="code-line"><span class="code-keyword">please</span> <span class="code-function">fly back</span></span>
+<span class="code-line"><span class="code-keyword">please</span> <span class="code-function">call</span></span>
 <span class="code-line"><span class="code-keyword">please</span> <span class="code-function">set value</span> <span class="code-string">'H'</span></span>
 <span class="code-line"><span class="code-keyword">please</span> <span class="code-function">output</span></span>
 <span class="code-line"><span class="code-function">set value</span> <span class="code-string">'e'</span></span>
@@ -1289,7 +1295,7 @@
         <div class="download-options">
             <div class="download-card animate-on-scroll">
                 <h3>最新版本</h3>
-                <p class="version">v1.0.0</p>
+                <p class="version">v1.1.0</p>
                 <button class="btn-download" onclick="downloadFile()">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -1345,8 +1351,12 @@
             }
         });
 
-        gsap.ticker.add((time) => lenis.raf(time * 1000));
-        gsap.ticker.lagSmoothing(0);
+        // Independent rAF - Lenis not blocked by GSAP animation processing
+        function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
 
         ScrollTrigger.refresh();
 
@@ -1375,11 +1385,11 @@
                     stagger: 0.15,
                     duration: 0.8,
                     ease: 'power3.out',
-                    scrollTrigger: {
-                        trigger: '.features-grid',
-                        start: 'top 80%',
-                        toggleActions: 'play none none none'
-                    }
+                scrollTrigger: {
+                    trigger: '.features-grid',
+                    start: 'top 80%',
+                    toggleActions: 'play none none none'
+                }
                 }
             );
 
@@ -1393,8 +1403,8 @@
                     ease: 'power3.out',
                     scrollTrigger: {
                         trigger: '.install-steps',
-                        start: 'top 80%',
-                        toggleActions: 'play none none none'
+                    start: 'top 80%',
+                    toggleActions: 'play none none none'
                     }
                 }
             );
@@ -1409,8 +1419,8 @@
                     ease: 'power3.out',
                     scrollTrigger: {
                         trigger: '.rules-container',
-                        start: 'top 80%',
-                        toggleActions: 'play none none none'
+                    start: 'top 80%',
+                    toggleActions: 'play none none none'
                     }
                 }
             );
@@ -1425,8 +1435,8 @@
                     ease: 'power2.out',
                     scrollTrigger: {
                         trigger: '.commands-section',
-                        start: 'top 80%',
-                        toggleActions: 'play none none none'
+                    start: 'top 80%',
+                    toggleActions: 'play none none none'
                     }
                 }
             );
@@ -1440,8 +1450,8 @@
                     ease: 'power3.out',
                     scrollTrigger: {
                         trigger: '.error-section',
-                        start: 'top 80%',
-                        toggleActions: 'play none none none'
+                    start: 'top 80%',
+                    toggleActions: 'play none none none'
                     }
                 }
             );
@@ -1456,8 +1466,8 @@
                     ease: 'power3.out',
                     scrollTrigger: {
                         trigger: '.download-options',
-                        start: 'top 80%',
-                        toggleActions: 'play none none none'
+                    start: 'top 80%',
+                    toggleActions: 'play none none none'
                     }
                 }
             );
@@ -1501,7 +1511,7 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding = 'utf-8')
 sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding = 'utf-8')
 
 def print_msg(string):
-    if '--only_output' not in sys.argv:
+    if '--only-output' not in sys.argv:
         print(string)
 
 def error(message_list: list) -> None:
@@ -1511,7 +1521,7 @@ def error(message_list: list) -> None:
             content = ''
             for s in value:
                 if isinstance(s, str):
-                    content += f'\\n{level * "  "}·{s}'
+                    content += f'\\n{level * '  '}·{s}'
                 else:
                     content += get_content(s, level + 1)
             return content
@@ -1521,7 +1531,7 @@ def error(message_list: list) -> None:
     sys.exit(1)
 
 class bee(object):
-    def __init__(self, type: str = 'egg', value: str | None = None):
+    def __init__(self, type: str = 'egg', value: str | int | None = None):
         self.type = type
         self.value = value
         self.is_slack = False
@@ -1540,6 +1550,7 @@ class new_bee_lang_interpreter(object):
         self.goodbye = False
         self.honeycomb_stack: None | List[bee] = None
         self.workspace_stack: List[bee] = []
+        self.sky_stack: List[bee] = []
         self.next_bee_value: str | None = None
         self.judgment_value: List[bool] = []
         self.loop_break: List[bool] = []
@@ -1600,14 +1611,14 @@ class new_bee_lang_interpreter(object):
             full_message.append(msg)
         if char:
             insults = [
-                f'你在干什么？！字符 "{char}" 不允许使用！',
-                f'你脑子里有蜜蜂吗？"{char}" 不是有效的 New Bee Lang 字符！',
-                f'我没想到有人会笨到使用 "{char}"，但你做到了！',
-                f'"{char}" 这个字符不属于我们的语言！你完了！'
+                f'你在干什么？！字符 “{char}” 不允许使用！',
+                f'你脑子里有蜜蜂吗？“{char}” 不是有效的 New Bee Lang 字符！',
+                f'我没想到有人会笨到使用 “{char}”，但你做到了！',
+                f'“{char}” 这个字符不属于我们的语言！你完了！'
             ]
             full_message.append(random.choice(insults))
             full_message.append(['有效字符: 字母 数字 空格 (character类型里填的除外)'])
-            full_message.append([f'你使用的: "{char}" (真是个天才选择呢)'])
+            full_message.append([f'你使用的: “{char}” (真是个天才选择呢)'])
         position = self.line_number
         if position:
             full_message.append([f'位置: 第 {position} 行'])
@@ -1654,9 +1665,9 @@ class new_bee_lang_interpreter(object):
             if line.strip().startswith('#'):
                 continue
             for char in line:
-                if char not in '#abcdefghijklmnopqrstuvwxyzNBL +-*/"\\'\\'\\n\\t' and line[line.index(char) - 1] != "'":
+                if char not in '#0123456789abcdefghijklmnopqrstuvwxyzNBL +-*/"\\'\\n\\t' and line[line.index(char) - 1] != "'":
                     self.error_with_details(
-                        [f'字符 "{char}" 不允许使用'],
+                        [f'字符 “{char}” 不允许使用'],
                         char = char,
                         error_type = 'syntax'
                     )
@@ -1706,8 +1717,8 @@ class new_bee_lang_interpreter(object):
     def too_long_code_error(self, tokens: List[str], all_tokens: List[str]) -> None:
         self.error_with_details([
             '语句执行完还有多余的代码？看来蜂蜜很喜欢这种代码（真的吗）！',
-            f'快把多余的 {" ".join(tokens)} 删除！'
-        ], " ".join(all_tokens))
+            f'快把多余的 {' '.join(tokens)} 删除！'
+        ], ' '.join(all_tokens))
 
     def too_short_code_error(self, cmd) -> None:
         self.error_with_details([f'命令 {cmd} 后的参数不够！蜂蜜气急败坏，直接报错！'], cmd)
@@ -1731,20 +1742,26 @@ class new_bee_lang_interpreter(object):
         if self.honeycomb_stack is None:
             if cmd:
                 self.uninit_error(cmd)
-        else:
+        elif self.honeycomb_stack:
             return self.honeycomb_stack[-1]
+        else:
+            self.error_with_details(['看来某人正在操作空蜂巢呢！'])
         return bee()
 
-    def input(self) -> str:
-        if self.input_value:
-            input_first = self.input_value[0]
-            self.input_value = self.input_value[1:]
-            return input_first
-        else:
+    def input(self) -> str | int:
+        if not self.input_value:
             self.input_value = input()
-            input_first = self.input_value[0]
+        first = self.input_value[0]
+        if first.isdigit():
+            i = 0
+            while i < len(self.input_value) and self.input_value[i].isdigit():
+                i += 1
+            result = int(self.input_value[:i])
+            self.input_value = self.input_value[i:]
+            return result
+        else:
             self.input_value = self.input_value[1:]
-            return input_first
+            return first
 
     def give_up(self):
         print_msg('\\n程序结束。再见，愚蠢的人类！蜜蜂们要去采蜜了。')
@@ -1808,7 +1825,8 @@ class new_bee_lang_interpreter(object):
                 elif self.honeycomb_stack is None:
                     self.uninit_error('judgment')
                 elif tokens[1] == 'start':
-                    if self.honeycomb_end().value != '0':
+                    val = self.honeycomb_end('judgment start').value
+                    if val is not None and val != '0' and val != 0:
                         self.judgment_value.append(True)
                     else:
                         self.judgment_value.append(False)
@@ -1856,7 +1874,7 @@ class new_bee_lang_interpreter(object):
                             ['蜂巢里没有蜜蜂！你没法使用 call 命令！'],
                             operation = 'call'
                         )
-                    self.workspace_stack.append(self.honeycomb_end())
+                    self.workspace_stack.append(self.honeycomb_end('call'))
                     self.honeycomb_stack = self.honeycomb_stack[0:-1]
                 else:
                     self.uninit_error('call')
@@ -1878,15 +1896,8 @@ class new_bee_lang_interpreter(object):
                 elif self.workspace_stack[-1].type == 'queen bee':
                     if not self.honey:
                         self.error_with_details(['没有蜂蜜了！后悔没有使用 get honey 命令吧！'], 'lay egg')
-                    if isinstance(self.next_bee_value, str):
-                        if len(self.next_bee_value) >= 2:
-                            bee_value_first = self.next_bee_value[0]
-                            self.next_bee_value = self.next_bee_value[1:]
-                        else:
-                            bee_value_first = self.next_bee_value
-                            self.next_bee_value = None
-                    else:
-                        bee_value_first = None
+                    bee_value_first = self.next_bee_value
+                    self.next_bee_value = None
                     self.honeycomb_stack.append(bee('egg', bee_value_first))
                     self.honey -= 1
                 elif self.is_working_bee_slack():
@@ -1895,7 +1906,7 @@ class new_bee_lang_interpreter(object):
                     self.bee_error('lay egg', 'queen bee')
             elif cmd == 'sleep':
                 if self.honeycomb_stack is not None:
-                    if self.honeycomb_end().type == 'egg':
+                    if self.honeycomb_end('sleep').type == 'egg':
                         self.honeycomb_stack[-1].grow_up()
                     else:
                         self.error_with_details([f'{self.honeycomb_stack[-1].type} 不能睡觉！'], 'sleep')
@@ -1905,7 +1916,7 @@ class new_bee_lang_interpreter(object):
                     self.too_long_code_error(tokens[1:], tokens)
             elif cmd == 'eat':
                 if self.honeycomb_stack is not None:
-                    if self.honeycomb_end().type == 'young bee':
+                    if self.honeycomb_end('eat').type == 'young bee':
                         self.honeycomb_stack[-1].grow_up()
                         self.honey -= 1
                     else:
@@ -1953,31 +1964,36 @@ class new_bee_lang_interpreter(object):
                     if self.honeycomb_stack[-1].value is not None and tokens[2:] == ['worker', 'bee']:
                         self.error_with_details(['有值的蜂蜜不能设置 type 为 worker bee 类型！'], 'set type')
                     if tokens[2:] in [['bee'], ['worker', 'bee']]:
-                        self.honeycomb_stack[-1].type = " ".join(tokens[2:])
+                        self.honeycomb_stack[-1].type = ' '.join(tokens[2:])
                     else:
-                        self.error_with_details([f'你不能设置 {" ".join(tokens[2:])} 这个 type'], 'set type')
+                        self.error_with_details([f'你不能设置 {' '.join(tokens[2:])} 这个 type'], 'set type')
                 elif tokens[1] == 'value':
                     if self.workspace_stack[-1].type != 'worker bee':
                         self.bee_error('set value')
                     elif self.is_working_bee_slack():
                         self.slack_error('set value')
-                    if tokens[2] not in ['input', 'random']:
+                    raw = tokens[2]
+                    value = None
+                    parsed = None
+                    if raw == 'input':
+                        value = self.input()
+                    elif raw == 'random':
+                        value = random.randint(0, 9)
+                    else:
                         try:
-                            tokens[2] = eval(tokens[2])
+                            parsed = eval(raw)
                         except:
-                            self.error_with_details(['设置的值不正确'], f'set value {tokens[2]}')
-                    if tokens[2] == 'input':
-                        tokens[2] = self.input()
-                    if tokens[2] == 'random':
-                        tokens[2] = str(random.randint(0, 9))
-                    value = tokens[2] if len(tokens[2]) == 1 else self.error_with_details(
-                        ['设置的值不正确'],
-                        f'set value {tokens[2]}'
-                    )
-                    if isinstance(value, str):
-                        if len(value) != 1:
-                            self.error_with_details([['设置的值不正确'], f'set value {tokens[2]}'])
+                            self.error_with_details(['设置的值不正确'], f"set value {raw}")
+                        if isinstance(parsed, int):
+                            value = parsed
+                        elif isinstance(parsed, str) and len(parsed) == 1:
+                            value = parsed
+                        else:
+                            self.error_with_details(['设置的值不正确'], f"set value {raw}")
+                    if self.honeycomb_stack:
                         self.honeycomb_stack[-1].value = value
+                    else:
+                        self.error_with_details(['蜂巢是空的'], f"set value s{raw}")
             elif cmd == 'output':
                 if length > 1:
                     self.too_long_code_error(tokens[1:], tokens)
@@ -1985,7 +2001,7 @@ class new_bee_lang_interpreter(object):
                     self.bee_error('output')
                 elif self.is_working_bee_slack():
                     self.slack_error('output')
-                output_value = self.honeycomb_end().value
+                output_value = self.honeycomb_end('output').value
                 if output_value is None:
                     self.error_with_details(['你没有设置值，无法输出！'], 'output')
                 print(output_value, end = '')
@@ -2003,10 +2019,32 @@ class new_bee_lang_interpreter(object):
                     self.too_short_code_error('go')
                 if length > 2:
                     self.too_long_code_error(tokens[2:], tokens)
+            elif cmd == 'fly':
+                if length > 2:
+                    self.too_long_code_error(tokens[2:], tokens)
+                elif length == 2:
+                    if tokens[1] == 'back':
+                        if self.honeycomb_stack is None:
+                            self.uninit_error('fly back')
+                        elif not self.sky_stack:
+                            self.error_with_details(['天空中一只蜜蜂都没有！无法 fly back！'], 'fly back')
+                        else:
+                            self.honeycomb_stack.append(self.sky_stack[-1])
+                            self.sky_stack = self.sky_stack[:-1]
+                    else:
+                        self.error_with_details([f'你想飞 {tokens[1]}？不可能！'], f'fly {tokens[1]}')
+                else:
+                    if self.honeycomb_stack is None:
+                        self.uninit_error('fly')
+                    elif not self.honeycomb_stack:
+                        self.error_with_details(['蜂巢里没有蜜蜂！无法 fly！'], 'fly')
+                    else:
+                        self.sky_stack.append(self.honeycomb_end('fly'))
+                        self.honeycomb_stack = self.honeycomb_stack[:-1]
             elif cmd == 'kill':
                 if self.honeycomb_stack is None:
                     self.uninit_error('kill')
-                elif self.honeycomb_end().type == 'queen bee':
+                elif self.honeycomb_end('kill').type == 'queen bee':
                     self.error_with_details([
                         '你真是太聪明了！你把蜂后杀掉了！',
                         '蜂后驾崩了！',
@@ -2049,21 +2087,21 @@ class new_bee_lang_interpreter(object):
                     op = tokens[1]
                     bee1, bee2 = self.honeycomb_stack[-2], self.honeycomb_stack[-1]
                     value1, value2 = bee1.value, bee2.value
-                    exp = f'{value1} {op} {value2}'
                     if op not in ['+', '-', '*', '/']:
-                        self.error_with_details([f'"{op} 是什么运算符？！"蜂蜜大喊道。'], f'compute {op}')
-                    if value2 == '0' and op == '/':
-                        self.error_with_details(['你想毁灭世界吗？！居然除以 0！'], 'compute /')
-                    try:
-                        self.next_bee_value = str(eval(exp))
-                    except TypeError:
+                        self.error_with_details([f'“{op} 是什么运算符？！”蜂蜜大喊道。'], f'compute {op}')
+                    if not isinstance(value1, int) or not isinstance(value2, int):
                         self.error_with_details(
-                            [f'蜂蜜飞了过来，说："嗡嗡"（你太菜了），因为 {value1} 与 {value2} 不能进行 {op} 运算！'],
+                            ['只有数字才能参与运算！', '字符类型的蜜蜂不能做算术！'],
                             f'compute {op}'
                         )
+                    if value2 == 0 and op == '/':
+                        self.error_with_details(['你想毁灭世界吗？！居然除以 0！'], 'compute /')
+                    exp = f'{value1} {op} {value2}'
+                    try:
+                        self.next_bee_value = eval(exp)
                     except Exception:
                         self.error_with_details(
-                            ['看来计算出错了！蜜蜂们感同身受（难道你信吗）！'],
+                            ['看来计算出错了！蜜蜂们感同身受（难道你信吗？）！'],
                             f' {op}'
                         )
             elif cmd == 'do':
@@ -2096,18 +2134,7 @@ class new_bee_lang_interpreter(object):
                             error_list.append(this_bee.value)
                         else:
                             self.error_with_details(['蜂巢内有的蜂蜜没有值，无法报错'])
-                    error(["".join(error_list), '这是你要求的！'])
-            elif cmd == 'swap':
-                if length > 1:
-                    self.too_long_code_error(tokens[1:], tokens)
-                else:
-                    (
-                        self.workspace_stack[-1],
-                        self.workspace_stack[-2]
-                    ) = (
-                        self.workspace_stack[-2],
-                        self.workspace_stack[-1]
-                    )
+                    error([''.join(error_list), '这是你要求的！'])
             elif cmd == 'get':
                 if length > 2:
                     self.too_long_code_error(tokens[2:], tokens)
@@ -2119,8 +2146,8 @@ class new_bee_lang_interpreter(object):
                     self.honey += 1
             else:
                 self.error_with_details(
-                    [f'命令 {" ".join(tokens)} 是什么意思！？蜜蜂不语，只是一味的报错'],
-                    " ".join(tokens)
+                    [f'命令 {' '.join(tokens)} 是什么意思！？蜜蜂不语，只是一味的报错'],
+                    ' '.join(tokens)
                 )
         else:
             self.error_with_details([
@@ -2161,7 +2188,8 @@ def main() -> None:
     print_msg('\\n程序结束。再见，愚蠢的人类！蜜蜂们要去采蜜了。')
 
 if __name__ == '__main__':
-    main()`;
+    main()
+`;
             const blob = new Blob([content], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -2185,12 +2213,14 @@ eat
 please set type worker bee
 please call
 do not give up
-swap
+go back
+fly
 please lay egg
 sleep
 eat
 do not give up
-please swap
+please fly back
+please call
 please set value 'H'
 please output
 set value 'e'
@@ -2232,20 +2262,46 @@ goodbye New Bee Lang`;
         function buildBackground() {
             const container = document.querySelector('.bg-container');
             if (!container) return;
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
             const vw = window.innerWidth;
             const vh = window.innerHeight;
             const size = vw / 9;
             const cols = Math.ceil(vw / size) + 1;
             const rows = Math.ceil((vh - size) / (size * 5 / 6)) + 2;
-            container.innerHTML = '';
+
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.ceil(vw * dpr);
+            canvas.height = Math.ceil(vh * dpr);
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+
+            const hw = size * 0.45;
+            const hh = size * 0.5;
+            ctx.fillStyle = '#FFD700';
+            ctx.strokeStyle = '#FFD700';
+            ctx.lineWidth = 1;
+
             for (let r = 0; r < rows; r++) {
-                const line = document.createElement('div');
-                line.className = 'bg-line';
-                for (let i = 0; i < cols; i++) {
-                    line.appendChild(document.createElement('div')).className = 'bg-item';
+                const offsetX = r % 2 === 0 ? 0 : -size / 2;
+                const y = r * (size * 5 / 6);
+                for (let c = 0; c < cols; c++) {
+                    const cx = offsetX + c * size + size / 2;
+                    const cy = y + size / 2;
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy - hh);
+                    ctx.lineTo(cx + hw, cy - hh * 0.5);
+                    ctx.lineTo(cx + hw, cy + hh * 0.5);
+                    ctx.lineTo(cx, cy + hh);
+                    ctx.lineTo(cx - hw, cy + hh * 0.5);
+                    ctx.lineTo(cx - hw, cy - hh * 0.5);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
                 }
-                container.appendChild(line);
             }
+
+            container.innerHTML = '';
+            container.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:-1;opacity:0.15;background-image:url(' + canvas.toDataURL() + ');background-size:100% 100%;';
         }
         buildBackground();
         window.addEventListener('resize', buildBackground);

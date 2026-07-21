@@ -834,8 +834,8 @@
             return events[idx];
         }
 
-        function initializeFortune() {
-            const fortunes = [
+        function getFortuneByIdx(idx) {
+            var fortunes = [
                 { name: '小吉', level: 'good' },
                 { name: '中吉', level: 'great' },
                 { name: '大吉', level: 'great' },
@@ -843,9 +843,7 @@
                 { name: '中凶', level: 'bad' },
                 { name: '大凶', level: 'bad' }
             ];
-            const seed = Math.floor(Date.now() / 1000);
-            const idx = Math.floor(seededRandom(seed) * fortunes.length);
-            return fortunes[idx];
+            return fortunes[Math.max(0, Math.min(idx - 1, 5))] || fortunes[0];
         }
 
         function pickRandom(arr, seed, count) {
@@ -945,11 +943,12 @@
                             return fetch(API_BASE_URL + '/api/user/info', { credentials: 'include' })
                                 .then(function(r) { return r.json(); })
                                 .then(function(info) {
-                                    if (info.status === 'success') {
-                                        data.coins = info.coins;
-                                        data.checkin_count = info.checkin_count;
-                                        data.consecutive_checkins = info.consecutive_checkins;
-                                    }
+                        if (info.status === 'success') {
+                            data.coins = info.coins;
+                            data.checkin_count = info.checkin_count;
+                            data.consecutive_checkins = info.consecutive_checkins;
+                            data.daily_fortune = info.daily_fortune;
+                        }
                                     return showResult(data, true);
                                 });
                         }
@@ -1018,12 +1017,13 @@
         function showResult(data, alreadyChecked) {
             var coins_earned = alreadyChecked ? 0 : (data.coins_earned || 0);
             var consecutive = data.consecutive_checkins || 0;
+            var fortune_idx = data.daily_fortune || 0;
 
             setTimeout(function() {
                 var seed = getDaySeed();
                 var weather = initializeWeather(seed);
                 var event = initializeEvents(seed);
-                var fortune = initializeFortune();
+                var fortune = getFortuneByIdx(fortune_idx);
                 var guidance = generateGuidance(weather, event, fortune);
 
                 document.querySelector('#resultModal .modal-header h2').textContent = alreadyChecked ? '今日已签到' : '签到成功！';
@@ -1112,8 +1112,8 @@
                     '    </svg>',
                     '  </div>',
                     '  <div class="result-card-body">',
-                    '    <div class="result-card-label">松鼠币 <span style="color:var(--text-muted);font-size:0.75rem">(签到 1~5/天)</span></div>',
-                    '    <div class="result-card-value"><span style="color:#FCD34D;font-family:Fredoka;font-size:1.3rem">' + (alreadyChecked ? '' : '+' + coins_earned + ' ') + '</span><span class="highlight" style="color:#FCD34D;font-family:Fredoka">' + data.coins + ' 🪙</span></div>',
+                     '    <div class="result-card-label">松鼠币 <span style="color:var(--text-muted);font-size:0.75rem">(签到 1~5/天)</span></div>',
+                     '    <div class="result-card-value"><span style="color:#FCD34D;font-family:Fredoka;font-size:1.3rem">' + (alreadyChecked ? '今日已领取' : '+' + coins_earned + ' 🪙') + '</span></div>',
                     '  </div>',
                     '</div>'
                 ].join('\n');
