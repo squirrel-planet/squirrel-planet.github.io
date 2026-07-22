@@ -1029,7 +1029,7 @@
                         </svg>
                         有效字符限制
                     </h3>
-                    <p>New Bee Lang 有效字符包括：字母、数字、空格、<code>#</code>、<code>+</code>、<code>-</code>、<code>*</code>、<code>/</code>、<code>"</code>、<code>'</code> 以及 <code>NBL</code> 三个大写字母。如果你胆敢使用其他「非法字符」，蜜蜂们会打印出一段专门针对该字符的嘲讽。</p>
+                    <p>New Bee Lang 有效字符包括：字母、数字、空格、<code>#</code>、<code>+</code>、<code>-</code>、<code>*</code>、<code>/</code>、<code>"</code>、<code>'</code>、<code>\</code> 以及 <code>NBL</code> 三个大写字母。如果你胆敢使用其他「非法字符」，蜜蜂们会打印出一段专门针对该字符的嘲讽。<br><strong>提示：</strong>字符串内支持转义符（如 <code>\n</code> <code>\t</code> <code>\033</code>）和多字符字符串值。</p>
                 </div>
                 <div class="rule-card animate-on-scroll">
                     <h3>
@@ -1072,18 +1072,15 @@
         <div class="commands-section">
             <div class="command-tabs">
                 <button class="tab-btn active" onclick="showCommandTab('basic')">基础操作</button>
-                <button class="tab-btn" onclick="showCommandTab('value')">数值设置</button>
-                <button class="tab-btn" onclick="showCommandTab('arithmetic')">算术运算</button>
+                <button class="tab-btn" onclick="showCommandTab('move')">蜜蜂移动</button>
+                <button class="tab-btn" onclick="showCommandTab('io')">操作返回</button>
+                <button class="tab-btn" onclick="showCommandTab('setting')">设置功能</button>
                 <button class="tab-btn" onclick="showCommandTab('control')">程序控制</button>
             </div>
             <div id="basic-commands" class="command-grid">
                 <div class="command-item animate-on-scroll">
                     <div class="command-name">init honeycomb</div>
                     <div class="command-desc">初始化蜂巢，创建包含蜂后（queen bee）的蜂巢栈。每个程序的起点，只能执行一次。</div>
-                </div>
-                <div class="command-item animate-on-scroll">
-                    <div class="command-name">call</div>
-                    <div class="command-desc">从蜂巢中取出一项，放入工作区。通常用于取出蜂巢顶部的蜜蜂。</div>
                 </div>
                 <div class="command-item animate-on-scroll">
                     <div class="command-name">lay egg</div>
@@ -1098,6 +1095,14 @@
                     <div class="command-desc">让蜂巢顶部的幼蜂吃蜂蜜成长。幼蜂→蜜蜂，消耗 1 点蜂蜜。</div>
                 </div>
                 <div class="command-item animate-on-scroll">
+                    <div class="command-name">random</div>
+                    <div class="command-desc">生成一个随机数字（0-9）。接着 <code>lay egg</code> 后，egg 的值会默认赋值为该随机数。</div>
+                </div>
+                <div class="command-item animate-on-scroll">
+                    <div class="command-name">get honey</div>
+                    <div class="command-desc">让工蜂获取 1 点蜂蜜。要求工作区顶部必须是工蜂。</div>
+                </div>
+                <div class="command-item animate-on-scroll">
                     <div class="command-name">kill</div>
                     <div class="command-desc">移除蜂巢顶部的蜜蜂。但不能移除蜂后，否则程序立即终止。</div>
                 </div>
@@ -1105,65 +1110,67 @@
                     <div class="command-name">all kill</div>
                     <div class="command-desc">清空整个蜂巢。不可逆的操作，请三思而后行。</div>
                 </div>
+            </div>
+            <div id="move-commands" class="command-grid" style="display: none;">
+                <div class="command-item animate-on-scroll">
+                    <div class="command-name">call</div>
+                    <div class="command-desc">从蜂巢中取出一项，放入工作区。通常用于取出蜂巢顶部的蜜蜂。<strong>注意：</strong>卵（egg）不能 call。</div>
+                </div>
                 <div class="command-item animate-on-scroll">
                     <div class="command-name">go back</div>
                     <div class="command-desc">将工作区顶部的蜜蜂放回蜂巢。保持蜂巢的秩序。</div>
                 </div>
                 <div class="command-item animate-on-scroll">
                     <div class="command-name">fly</div>
-                    <div class="command-desc">将蜂巢顶部的蜜蜂移动到天空区（中转站）。配合 <code>fly back</code> 可以灵活调度蜜蜂。</div>
+                    <div class="command-desc">将蜂巢顶部的蜜蜂移动到天空区（中转站）。配合 <code>fly back</code> 可以灵活调度蜜蜂。<strong>注意：</strong>卵（egg）和幼蜂（young bee）不能飞。</div>
                 </div>
                 <div class="command-item animate-on-scroll">
                     <div class="command-name">fly back</div>
                     <div class="command-desc">将天空区顶部的蜜蜂放回蜂巢。与 <code>fly</code> 配对使用。</div>
                 </div>
+            </div>
+            <div id="io-commands" class="command-grid" style="display: none;">
                 <div class="command-item animate-on-scroll">
-                    <div class="command-name">get honey</div>
-                    <div class="command-desc">让工蜂获取 1 点蜂蜜。要求工作区顶部必须是工蜂。</div>
+                    <div class="command-name">input</div>
+                    <div class="command-desc">从标准输入读取值。接着 <code>lay egg</code> 后，egg 的值会默认赋值为输入的内容。数字串→整数类型，单字符→字符类型。</div>
+                </div>
+                <div class="command-item animate-on-scroll">
+                    <div class="command-name">random</div>
+                    <div class="command-desc">生成一个随机数字（0-9）。接着 <code>lay egg</code> 后，egg 的值会默认赋值为该随机数。</div>
+                </div>
+                <div class="command-item animate-on-scroll">
+                    <div class="command-name">compute +</div>
+                    <div class="command-desc">加法运算。蜂巢顶部两个整数相加，接着 <code>lay egg</code> 后，egg 的值会默认赋值为计算结果（仅整数类型可运算）。</div>
+                </div>
+                <div class="command-item animate-on-scroll">
+                    <div class="command-name">compute -</div>
+                    <div class="command-desc">减法运算。蜂巢顶部两个整数相减（顶部减第二顶），接着 <code>lay egg</code> 后，egg 的值会默认赋值为计算结果（仅整数类型可运算）。</div>
+                </div>
+                <div class="command-item animate-on-scroll">
+                    <div class="command-name">compute *</div>
+                    <div class="command-desc">乘法运算。蜂巢顶部两个整数相乘，接着 <code>lay egg</code> 后，egg 的值会默认赋值为计算结果（仅整数类型可运算）。</div>
+                </div>
+                <div class="command-item animate-on-scroll">
+                    <div class="command-name">compute /</div>
+                    <div class="command-desc">除法运算。蜂巢顶部两个整数相除，接着 <code>lay egg</code> 后，egg 的值会默认赋值为计算结果（仅整数类型可运算，除数不能为 0）。</div>
                 </div>
             </div>
-            <div id="value-commands" class="command-grid" style="display: none;">
+            <div id="setting-commands" class="command-grid" style="display: none;">
+                <div class="command-item animate-on-scroll">
+                    <div class="command-name">set value '*'</div>
+                    <div class="command-desc">为蜂巢顶部的蜜蜂设置字符值。字符用单引号包裹（如 <code>'a'</code>），支持转义符如 <code>\n</code> <code>\t</code> <code>\u4e00</code>。要求工作区顶部必须是工蜂。</div>
+                </div>
+                <div class="command-item animate-on-scroll">
+                    <div class="command-name">set value *</div>
+                    <div class="command-desc">为蜂巢顶部的蜜蜂设置数字值。数字直接写（如 <code>1234</code>），支持多位数。要求工作区顶部必须是工蜂。</div>
+                </div>
                 <div class="command-item animate-on-scroll">
                     <div class="command-name">set type bee</div>
                     <div class="command-desc">将蜂巢顶部的普通蜜蜂设置为 bee 类型。</div>
                 </div>
                 <div class="command-item animate-on-scroll">
                     <div class="command-name">set type worker bee</div>
-                    <div class="command-desc">将蜂巢顶部的 bee 设置为工蜂。工蜂可以执行计算和输出等任务。有值的蜜蜂不能设置为工蜂。</div>
-                </div>
-                <div class="command-item animate-on-scroll">
-                    <div class="command-name">set value 'x' / set value 1234</div>
-                    <div class="command-desc">为蜂巢顶部的蜜蜂设置值。字符用单引号包裹（如 <code>'a'</code>），数字直接写（如 <code>2024</code>），支持多位数。</div>
-                </div>
-                <div class="command-item animate-on-scroll">
-                    <div class="command-name">set value input</div>
-                    <div class="command-desc">从输入读取值。数字串→整数类型，单字符→字符类型（C++ 风格贪婪解析）。</div>
-                </div>
-                <div class="command-item animate-on-scroll">
-                    <div class="command-name">set value random</div>
-                    <div class="command-desc">为蜂巢顶部的蜜蜂设置一个随机数字（0-9），整数类型。</div>
-                </div>
-                <div class="command-item animate-on-scroll">
-                    <div class="command-name">output</div>
-                    <div class="command-desc">输出蜂巢顶部蜜蜂的值。要求工作区顶部必须是工蜂。</div>
-                </div>
-            </div>
-            <div id="arithmetic-commands" class="command-grid" style="display: none;">
-                <div class="command-item animate-on-scroll">
-                    <div class="command-name">compute +</div>
-                    <div class="command-desc">加法运算。蜂巢顶部两个整数相加，结果存入 next_bee_value（仅整数类型可运算）。</div>
-                </div>
-                <div class="command-item animate-on-scroll">
-                    <div class="command-name">compute -</div>
-                    <div class="command-desc">减法运算。蜂巢顶部两个整数相减（顶部减第二顶，仅整数类型可运算）。</div>
-                </div>
-                <div class="command-item animate-on-scroll">
-                    <div class="command-name">compute *</div>
-                    <div class="command-desc">乘法运算。蜂巢顶部两个整数相乘（仅整数类型可运算）。</div>
-                </div>
-                <div class="command-item animate-on-scroll">
-                    <div class="command-name">compute /</div>
-                    <div class="command-desc">除法运算。蜂巢顶部两个整数相除（仅整数类型可运算）。</div>
+                    <div class="command-desc">将蜂巢顶部的 bee 设置为工蜂。有值的蜜蜂不能设置为工蜂。</div>
                 </div>
             </div>
             <div id="control-commands" class="command-grid" style="display: none;">
@@ -1176,10 +1183,6 @@
                     <div class="command-desc">条件判断结构。检查蜂巢顶部蜜蜂的值是否为非 '0' 或非 0（兼容整数类型）。要求工作区顶部必须是工蜂。</div>
                 </div>
                 <div class="command-item animate-on-scroll">
-                    <div class="command-name">give up</div>
-                    <div class="command-desc">立即终止程序。打印告别信息并退出。</div>
-                </div>
-                <div class="command-item animate-on-scroll">
                     <div class="command-name">do not give up</div>
                     <div class="command-desc">防止程序因「放弃检测」而报错，效果持续 5 条指令。</div>
                 </div>
@@ -1188,8 +1191,16 @@
                     <div class="command-desc">防止工作蜂在指令执行后自动偷懒，效果持续 5 条指令。</div>
                 </div>
                 <div class="command-item animate-on-scroll">
+                    <div class="command-name">output</div>
+                    <div class="command-desc">输出蜂巢顶部蜜蜂的值。要求工作区顶部必须是工蜂。</div>
+                </div>
+                <div class="command-item animate-on-scroll">
                     <div class="command-name">error</div>
                     <div class="command-desc">遍历蜂巢，将所有蜜蜂的值拼接后作为错误信息输出并终止程序。</div>
+                </div>
+                <div class="command-item animate-on-scroll">
+                    <div class="command-name">give up</div>
+                    <div class="command-desc">立即终止程序。打印告别信息并退出。</div>
                 </div>
                 <div class="command-item animate-on-scroll">
                     <div class="command-name">please</div>
@@ -1281,8 +1292,8 @@
                 <div class="error-example">
                     <span class="code-line code-mocking mocking">这代码比我奶奶的食谱还难懂！</span>
 <span class="code-line">位置: 第 15 行</span>
-<span class="code-line">操作: set value "ab"</span>
-<span class="code-line code-mocking mocking">value 必须是单个字符！</span>
+<span class="code-line">操作: set value 'abc'</span>
+<span class="code-line code-mocking mocking">设置的值不正确</span>
 <span class="code-line code-encouragement encouragement">继续加油！你快要理解了... 才怪！</span>
                 </div>
             </div>
@@ -1295,7 +1306,7 @@
         <div class="download-options">
             <div class="download-card animate-on-scroll">
                 <h3>最新版本</h3>
-                <p class="version">v1.1.0</p>
+                <p class="version">v1.2.0</p>
                 <button class="btn-download" onclick="downloadFile()">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -1551,7 +1562,7 @@ class new_bee_lang_interpreter(object):
         self.honeycomb_stack: None | List[bee] = None
         self.workspace_stack: List[bee] = []
         self.sky_stack: List[bee] = []
-        self.next_bee_value: str | None = None
+        self.next_bee_value: str | int | None = None
         self.judgment_value: List[bool] = []
         self.loop_break: List[bool] = []
         self.input_value = ''
@@ -1617,7 +1628,7 @@ class new_bee_lang_interpreter(object):
                 f'“{char}” 这个字符不属于我们的语言！你完了！'
             ]
             full_message.append(random.choice(insults))
-            full_message.append(['有效字符: 字母 数字 空格 (character类型里填的除外)'])
+            full_message.append(['有效字符: 字母 数字 空格 运算符 (字符值、注释除外)'])
             full_message.append([f'你使用的: “{char}” (真是个天才选择呢)'])
         position = self.line_number
         if position:
@@ -1626,7 +1637,7 @@ class new_bee_lang_interpreter(object):
             full_message.append([f'操作: {operation}'])
             if 'init honeycomb' not in operation:
                 if isinstance(self.honeycomb_stack, list):
-                    full_message.append([f'当前栈深度: {len(self.honeycomb_stack)}'])
+                    full_message.append([f'当前蜂巢深度: {len(self.honeycomb_stack)}'])
         full_message.append(self.get_random_encouragement())
         error(['错误', full_message, '程序执行失败，蜜蜂们表示遗憾（并没有）'])
 
@@ -1634,12 +1645,22 @@ class new_bee_lang_interpreter(object):
         tokens = []
         current_token = ''
         in_quotes = False
-        for char in instruction:
+        i = 0
+        while i < len(instruction):
+            char = instruction[i]
             if char == "'":
                 if in_quotes:
-                    tokens.append("'" + current_token + "'")
-                    current_token = ''
-                    in_quotes = False
+                    backslash_count = 0
+                    j = i - 1
+                    while j >= 0 and instruction[j] == '\\\\':
+                        backslash_count += 1
+                        j -= 1
+                    if backslash_count % 2 == 1:
+                        current_token += "'"
+                    else:
+                        tokens.append("'" + current_token + "'")
+                        current_token = ''
+                        in_quotes = False
                 else:
                     if current_token:
                         tokens.append(current_token)
@@ -1651,6 +1672,7 @@ class new_bee_lang_interpreter(object):
                     current_token = ''
             else:
                 current_token += char
+            i += 1
         if current_token:
             tokens.append(current_token)
         return tokens
@@ -1664,13 +1686,28 @@ class new_bee_lang_interpreter(object):
                 continue
             if line.strip().startswith('#'):
                 continue
-            for char in line:
-                if char not in '#0123456789abcdefghijklmnopqrstuvwxyzNBL +-*/"\\'\\n\\t' and line[line.index(char) - 1] != "'":
+            in_quotes = False
+            i = 0
+            while i < len(line):
+                char = line[i]
+                if char == "'":
+                    if in_quotes:
+                        backslash_count = 0
+                        j = i - 1
+                        while j >= 0 and line[j] == '\\\\':
+                            backslash_count += 1
+                            j -= 1
+                        if backslash_count % 2 == 0:
+                            in_quotes = False
+                    else:
+                        in_quotes = True
+                elif not in_quotes and char not in '#0123456789abcdefghijklmnopqrstuvwxyzNBL +-*/"\\'\\n\\t\\\\':
                     self.error_with_details(
-                        [f'字符 “{char}” 不允许使用'],
-                        char = char,
-                        error_type = 'syntax'
+                        [f'字符 "{char}" 不允许使用'],
+                        char=char,
+                        error_type='syntax'
                     )
+                i += 1
             tokens.append(self.parse_tokens(line))
             if tokens[-1][0] == 'please':
                 please_count += 1
@@ -1874,7 +1911,13 @@ class new_bee_lang_interpreter(object):
                             ['蜂巢里没有蜜蜂！你没法使用 call 命令！'],
                             operation = 'call'
                         )
-                    self.workspace_stack.append(self.honeycomb_end('call'))
+                    bee_to_call = self.honeycomb_end('call')
+                    if bee_to_call.type == 'egg':
+                        self.error_with_details(
+                            ['egg 不能 call！', '卵都还没孵化呢，怎么叫它干活？'],
+                            operation = 'call'
+                        )
+                    self.workspace_stack.append(bee_to_call)
                     self.honeycomb_stack = self.honeycomb_stack[0:-1]
                 else:
                     self.uninit_error('call')
@@ -1941,12 +1984,20 @@ class new_bee_lang_interpreter(object):
                     self.too_short_code_error('get')
                 elif tokens[1] != 'honey':
                     self.error_with_details([f'无法获取 {tokens[1]}！'], f'get {tokens[1]}')
-                elif self.workspace_stack[-1] != 'worker bee':
+                elif self.workspace_stack[-1].type != 'worker bee':
                     self.bee_error('get honey')
                 elif self.is_working_bee_slack():
                     self.slack_error('get honey')
                 else:
                     self.honey += 1
+            elif cmd == 'input':
+                if length > 1:
+                    self.too_long_code_error(tokens[1:], tokens)
+                self.next_bee_value = self.input()
+            elif cmd == 'random':
+                if length > 1:
+                    self.too_long_code_error(tokens[1:], tokens)
+                self.next_bee_value = random.randint(0, 9)
             elif cmd == 'set':
                 if length > 4 and tokens[1] == 'type':
                     self.too_long_code_error(tokens[4:], tokens)
@@ -1975,9 +2026,7 @@ class new_bee_lang_interpreter(object):
                     raw = tokens[2]
                     value = None
                     parsed = None
-                    if raw == 'input':
-                        value = self.input()
-                    elif raw == 'random':
+                    if raw == 'random':
                         value = random.randint(0, 9)
                     else:
                         try:
@@ -1986,7 +2035,7 @@ class new_bee_lang_interpreter(object):
                             self.error_with_details(['设置的值不正确'], f"set value {raw}")
                         if isinstance(parsed, int):
                             value = parsed
-                        elif isinstance(parsed, str) and len(parsed) == 1:
+                        elif isinstance(parsed, str) and len(parsed) >= 1:
                             value = parsed
                         else:
                             self.error_with_details(['设置的值不正确'], f"set value {raw}")
@@ -2039,7 +2088,18 @@ class new_bee_lang_interpreter(object):
                     elif not self.honeycomb_stack:
                         self.error_with_details(['蜂巢里没有蜜蜂！无法 fly！'], 'fly')
                     else:
-                        self.sky_stack.append(self.honeycomb_end('fly'))
+                        bee_to_fly = self.honeycomb_end('fly')
+                        if bee_to_fly.type == 'egg':
+                            self.error_with_details(
+                                ['egg 不能 fly！', '连翅膀都没长出来呢，飞什么飞？'],
+                                operation = 'fly'
+                            )
+                        elif bee_to_fly.type == 'young bee':
+                            self.error_with_details(
+                                ['young bee 不能 fly！', '羽翼未丰，想飞还早着呢！'],
+                                operation = 'fly'
+                            )
+                        self.sky_stack.append(bee_to_fly)
                         self.honeycomb_stack = self.honeycomb_stack[:-1]
             elif cmd == 'kill':
                 if self.honeycomb_stack is None:
@@ -2135,15 +2195,6 @@ class new_bee_lang_interpreter(object):
                         else:
                             self.error_with_details(['蜂巢内有的蜂蜜没有值，无法报错'])
                     error([''.join(error_list), '这是你要求的！'])
-            elif cmd == 'get':
-                if length > 2:
-                    self.too_long_code_error(tokens[2:], tokens)
-                elif length < 2:
-                    self.too_short_code_error('get')
-                elif tokens[1] != 'honey':
-                    self.error_with_details([f'不能执行 get {tokens[1]} 命令！'], f'get {tokens[1]}')
-                else:
-                    self.honey += 1
             else:
                 self.error_with_details(
                     [f'命令 {' '.join(tokens)} 是什么意思！？蜜蜂不语，只是一味的报错'],

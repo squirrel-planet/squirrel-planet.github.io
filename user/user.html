@@ -543,6 +543,10 @@
             transition: opacity 0.3s ease;
         }
 
+        #modalOverlay {
+            z-index: 1001;
+        }
+
         .modal-overlay.show {
             display: flex;
             opacity: 1;
@@ -797,29 +801,40 @@
                 </div>
             </div>
 
-            <div class="modal-overlay" id="modalOverlay">
-                <div class="modal-content">
-                    <div class="modal-title" id="modalTitle">提示</div>
-                    <div class="modal-message" id="modalMessage"></div>
-                    <button class="modal-btn" id="modalBtn">确定</button>
-                </div>
-            </div>
+        </div>
+    </div>
 
-            <div class="modal-overlay" id="deleteModal">
-                <div class="modal-content">
-                    <div class="modal-title" style="color: #EF4444;">注销账户</div>
-                    <div class="modal-message">此操作不可撤销，请输入密码确认</div>
-                    <input type="password" id="deletePasswordInput" class="input-field" placeholder="请输入密码"
-                        style="width:100%;padding:12px 16px;border-radius:10px;border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.05);color:var(--text-light);font-size:1rem;outline:none;margin-bottom:20px;font-family:var(--font-body);">
-                    <div style="display:flex;gap:12px;">
-                        <button class="modal-btn" id="deleteCancelBtn"
-                            style="flex:1;background:rgba(255,255,255,0.08);color:var(--text-light);">取消</button>
-                        <button class="modal-btn" id="deleteConfirmBtn"
-                            style="flex:1;background:linear-gradient(135deg,#EF4444,#DC2626);">确认注销</button>
-                    </div>
-                </div>
-            </div>
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <div class="modal-title" id="modalTitle">提示</div>
+            <div class="modal-message" id="modalMessage"></div>
+            <button class="modal-btn" id="modalBtn">确定</button>
+        </div>
+    </div>
 
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal-content">
+            <div class="modal-title" style="color: #EF4444;">注销账户</div>
+            <div class="modal-message">此操作不可撤销，请输入密码确认</div>
+            <input type="password" id="deletePasswordInput" class="input-field" placeholder="请输入密码"
+                style="width:100%;padding:12px 16px;border-radius:10px;border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.05);color:var(--text-light);font-size:1rem;outline:none;margin-bottom:20px;font-family:var(--font-body);">
+            <div style="display:flex;gap:12px;">
+                <button class="modal-btn" id="deleteCancelBtn"
+                    style="flex:1;background:rgba(255,255,255,0.08);color:var(--text-light);">取消</button>
+                <button class="modal-btn" id="deleteConfirmBtn"
+                    style="flex:1;background:linear-gradient(135deg,#EF4444,#DC2626);">确认注销</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-content" style="text-align:left;">
+            <div class="modal-title" id="editModalTitle" style="text-align:center;margin-bottom:20px;">修改</div>
+            <div id="editModalFields"></div>
+            <div style="display:flex;gap:12px;">
+                <button class="modal-btn" id="editCancelBtn" style="flex:1;background:rgba(255,255,255,0.08);color:var(--text-light);">取消</button>
+                <button class="modal-btn" id="editConfirmBtn" style="flex:1;">确认</button>
+            </div>
         </div>
     </div>
 
@@ -971,18 +986,147 @@
             }
         })();
 
-        // Edit handlers
+        // Edit modal
+        const editModal = document.getElementById('editModal');
+        const editModalTitle = document.getElementById('editModalTitle');
+        const editModalFields = document.getElementById('editModalFields');
+        const editCancelBtn = document.getElementById('editCancelBtn');
+        const editConfirmBtn = document.getElementById('editConfirmBtn');
+
+        let editMode = '';
+        let editInputs = {};
+
+        function makeLabel(text) {
+            const el = document.createElement('label');
+            el.textContent = text;
+            el.style.cssText = 'display:block;font-size:0.9rem;color:var(--text-dim);margin-bottom:6px;';
+            return el;
+        }
+
+        function makeInput(type, placeholder, mb) {
+            const el = document.createElement('input');
+            el.type = type;
+            el.placeholder = placeholder;
+            el.style.cssText = 'width:100%;padding:12px 16px;border-radius:10px;border:1px solid rgba(255,140,0,0.3);background:rgba(255,140,0,0.05);color:var(--text-light);font-size:1rem;outline:none;margin-bottom:' + (mb || 16) + 'px;font-family:var(--font-body);';
+            return el;
+        }
+
+        function openEditModal(mode) {
+            editMode = mode;
+            editInputs = {};
+            editModalFields.innerHTML = '';
+
+            if (mode === 'username') {
+                editModalTitle.textContent = '修改用户名';
+                editModalFields.appendChild(makeLabel('新用户名'));
+                editInputs.value = makeInput('text', '请输入新用户名');
+                editModalFields.appendChild(editInputs.value);
+                editModalFields.appendChild(makeLabel('当前密码（验证身份）'));
+                editInputs.password = makeInput('password', '请输入当前密码', 20);
+                editModalFields.appendChild(editInputs.password);
+            } else if (mode === 'email') {
+                editModalTitle.textContent = '修改邮箱';
+                editModalFields.appendChild(makeLabel('新邮箱'));
+                editInputs.value = makeInput('email', '请输入新邮箱');
+                editModalFields.appendChild(editInputs.value);
+                editModalFields.appendChild(makeLabel('当前密码（验证身份）'));
+                editInputs.password = makeInput('password', '请输入当前密码', 20);
+                editModalFields.appendChild(editInputs.password);
+            } else if (mode === 'password') {
+                editModalTitle.textContent = '修改密码';
+                editModalFields.appendChild(makeLabel('当前密码'));
+                editInputs.currentPw = makeInput('password', '请输入当前密码');
+                editModalFields.appendChild(editInputs.currentPw);
+                editModalFields.appendChild(makeLabel('新密码'));
+                editInputs.newPw = makeInput('password', '请输入新密码');
+                editModalFields.appendChild(editInputs.newPw);
+                editModalFields.appendChild(makeLabel('确认新密码'));
+                editInputs.confirmPw = makeInput('password', '请再次输入新密码', 20);
+                editModalFields.appendChild(editInputs.confirmPw);
+            }
+
+            editModal.classList.add('show');
+            if (!isReduced) {
+                const mc = editModal.querySelector('.modal-content');
+                gsap.fromTo(mc, { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(1.7)' });
+            }
+        }
+
+        function closeEditModal() { editModal.classList.remove('show'); }
+
+        editCancelBtn.addEventListener('click', closeEditModal);
+        editModal.addEventListener('click', function (e) {
+            if (e.target === editModal) closeEditModal();
+        });
+
+        function alertFromEdit(msg, callback) {
+            closeEditModal();
+            setTimeout(() => alert(msg, callback), 300);
+        }
+
+        editConfirmBtn.addEventListener('click', async function () {
+            const body = {};
+            if (editMode === 'username') {
+                const newUsername = editInputs.value ? editInputs.value.value.trim() : '';
+                const password = editInputs.password ? editInputs.password.value : '';
+                if (!newUsername) { alertFromEdit('请输入新用户名'); return; }
+                if (!password) { alertFromEdit('请输入当前密码'); return; }
+                body.new_username = newUsername;
+                body.password = await hashPassword(password);
+            } else if (editMode === 'email') {
+                const newEmail = editInputs.value ? editInputs.value.value.trim() : '';
+                const password = editInputs.password ? editInputs.password.value : '';
+                if (!newEmail) { alertFromEdit('请输入新邮箱'); return; }
+                if (!password) { alertFromEdit('请输入当前密码'); return; }
+                body.new_email = newEmail;
+                body.password = await hashPassword(password);
+            } else if (editMode === 'password') {
+                const curPw = editInputs.currentPw ? editInputs.currentPw.value : '';
+                const newPw = editInputs.newPw ? editInputs.newPw.value : '';
+                const confirmPw = editInputs.confirmPw ? editInputs.confirmPw.value : '';
+                if (!curPw) { alertFromEdit('请输入当前密码'); return; }
+                if (!newPw) { alertFromEdit('请输入新密码'); return; }
+                if (newPw !== confirmPw) { alertFromEdit('两次输入的新密码不一致'); return; }
+                body.password = await hashPassword(curPw);
+                body.new_password = await hashPassword(newPw);
+            } else return;
+
+            editConfirmBtn.disabled = true;
+            editConfirmBtn.textContent = '修改中...';
+            try {
+                const res = await fetch(API_BASE_URL + '/api/user/update', {
+                    ...FETCH_OPT,
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    closeEditModal();
+                    showModal('提示', data.message || '修改成功', function () { fetchUserProfile(); });
+                } else {
+                    alertFromEdit(data.message || '修改失败');
+                }
+            } catch (err) {
+                alertFromEdit('网络错误，请稍后重试');
+                console.error(err);
+            } finally {
+                editConfirmBtn.disabled = false;
+                editConfirmBtn.textContent = '确认';
+            }
+        });
+
         document.getElementById('editUsername').addEventListener('click', function (e) {
             e.preventDefault();
-            alert('用户名修改功能即将上线，敬请期待！');
+            openEditModal('username');
         });
         document.getElementById('editEmail').addEventListener('click', function (e) {
             e.preventDefault();
-            alert('邮箱修改功能即将上线，敬请期待！');
+            openEditModal('email');
         });
         document.getElementById('editPassword').addEventListener('click', function (e) {
             e.preventDefault();
-            window.location.href = '../login_or_signup/login_or_signup.html?mode=change_password';
+            openEditModal('password');
         });
 
         // Delete account
@@ -1018,10 +1162,15 @@
             if (e.target === deleteModal) closeDeleteModal();
         });
 
+        function alertFromDelete(msg, callback) {
+            closeDeleteModal();
+            setTimeout(() => alert(msg, callback), 300);
+        }
+
         deleteConfirmBtn.addEventListener('click', async function () {
             const password = deletePasswordInput.value;
             if (!password) {
-                alert('请输入密码');
+                alertFromDelete('请输入密码');
                 return;
             }
             const passwordHash = await hashPassword(password);
@@ -1036,10 +1185,10 @@
                         window.location.href = '../login_or_signup/login_or_signup.html';
                     });
                 } else {
-                    alert(data.message || '注销失败');
+                    alertFromDelete(data.message || '注销失败');
                 }
             } catch (err) {
-                alert('网络错误，请稍后重试');
+                alertFromDelete('网络错误，请稍后重试');
                 console.error(err);
             } finally {
                 deleteConfirmBtn.disabled = false;
