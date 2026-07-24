@@ -927,7 +927,6 @@
             overlay.onclick = function (e) {
                 if (e.target === overlay) {
                     overlay.classList.remove('show');
-                    if (callback) callback();
                 }
             };
         }
@@ -962,7 +961,7 @@
             e.preventDefault();
             showModal('退出登录', '确定要退出登录吗？', async function () {
                 try { await fetch(API_BASE_URL + '/api/logout', FETCH_OPT); } catch (_) {}
-                window.location.href = '../login_or_signup/login_or_signup.html';
+                window.location.href = '../index.html';
             });
         });
 
@@ -1182,7 +1181,7 @@
                 if (data.status === 'success') {
                     closeDeleteModal();
                     showModal('提示', '账户已注销', function () {
-                        window.location.href = '../login_or_signup/login_or_signup.html';
+                window.location.href = '../index.html';
                     });
                 } else {
                     alertFromDelete(data.message || '注销失败');
