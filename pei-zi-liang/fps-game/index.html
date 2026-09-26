@@ -3,8 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PL-1998 · 混乱协议 | 3D FPS</title>
+<title>裴梓良星球 · PL-1998 · 混乱协议 | 3D FPS</title>
 <link rel="icon" type="image/x-icon" href="../pei-zi-liang.ico">
+<!-- ============ SEO / 搜索收录（Bing 等） ============ -->
+<meta name="description" content="裴梓良星球 PL-1998 · 混乱协议 —— 网页端 3D FPS 游戏：无尽 AI 对抗、四武器切换、波次生存。纯前端实现，浏览器即玩。">
+<meta name="keywords" content="裴梓良星球, PL-1998, 混乱协议, 3D FPS, 网页游戏, 射击游戏, 松鼠星球">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://squirrel-planet.github.io/pei-zi-liang/fps-game/">
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="裴梓良星球 PL-1998">
+<meta property="og:title" content="裴梓良星球 · PL-1998 · 混乱协议 | 3D FPS">
+<meta property="og:description" content="混乱协议 —— 无尽 AI 对抗网页 3D FPS：四武器、波次生存、终端风 HUD，浏览器即玩。">
+<meta property="og:url" content="https://squirrel-planet.github.io/pei-zi-liang/fps-game/">
+<meta property="og:locale" content="zh_CN">
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="裴梓良星球 · PL-1998 · 混乱协议 | 3D FPS">
+<meta name="twitter:description" content="混乱协议 —— 无尽 AI 对抗网页 3D FPS：四武器、波次生存、终端风 HUD，浏览器即玩。">
 <style>
 /* ============================================================
    未来废墟 · 无尽 AI 对抗 —— 未来混乱风格 UI
@@ -14,7 +30,7 @@
 html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
 body { font-family: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace; color: #00ffff; }
 
-#app { position: fixed; inset: 0; }
+#app { position: fixed; inset: 0; touch-action: none; }
 #app canvas { display: block; }
 
 /* ---------- 全屏扫描线 / 噪点（视觉统一） ---------- */
@@ -217,6 +233,52 @@ body { font-family: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace; colo
 .overlay .ov-keys { margin-top: 26px; font-size: 12px; color: #aaa; line-height: 2.2; letter-spacing: 1px; }
 .overlay .ov-keys b { color: #00ffff; font-weight: normal; border: 1px solid rgba(0,255,255,.4); padding: 1px 7px; margin: 0 3px; }
 
+/* ---------- 游戏设置面板（开始前） ---------- */
+.ov-setting { margin-top: 30px; display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; }
+.ov-setting-label { font-size: 13px; color: #ff00ff; letter-spacing: 3px; text-shadow: 0 0 8px rgba(255,0,255,.7); }
+.ov-toggle {
+    padding: 6px 22px; font-family: inherit; font-size: 13px; letter-spacing: 3px; min-width: 84px;
+    color: #666; background: transparent; border: 1px solid #444; cursor: pointer;
+    transition: all .25s;
+}
+.ov-toggle:hover { box-shadow: 0 0 14px rgba(0,255,255,.3); }
+.ov-toggle.on { color: #00ffff; border-color: #00ffff; text-shadow: 0 0 8px rgba(0,255,255,.8); box-shadow: 0 0 18px rgba(0,255,255,.35); }
+.ov-setting-note { width: 100%; font-size: 10px; color: #555; letter-spacing: 2px; }
+#btnStartGame { background: rgba(0,255,255,.06); }
+#btnStartGame:hover { background: rgba(0,255,255,.18); }
+
+/* ---------- 手机端触控控件 ---------- */
+#touchControls { position: fixed; inset: 0; z-index: 150; pointer-events: none; display: none; touch-action: none; }
+#joyZone { position: absolute; left: 22px; bottom: 118px; width: 180px; height: 180px; pointer-events: auto; touch-action: none; }
+#joyBase {
+    position: absolute; left: 50%; top: 50%; width: 132px; height: 132px; margin: -66px 0 0 -66px;
+    border: 2px solid rgba(0,255,255,.55); border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,255,255,.08), rgba(0,255,255,.02));
+    box-shadow: 0 0 18px rgba(0,255,255,.25), inset 0 0 18px rgba(0,255,255,.12);
+}
+#joyKnob {
+    position: absolute; left: 50%; top: 50%; width: 56px; height: 56px; margin: -28px 0 0 -28px;
+    border-radius: 50%; background: radial-gradient(circle at 35% 35%, #bffcff, #00b8c8 70%, #006a75);
+    box-shadow: 0 0 16px rgba(0,255,255,.8), inset 0 0 10px rgba(255,255,255,.5);
+    transition: transform .03s linear;
+}
+.btn-zone { position: absolute; right: 20px; bottom: 118px; width: 220px; height: 220px; pointer-events: auto; touch-action: none; }
+.btn-zone button {
+    position: absolute; font-family: inherit; color: #00ffff; background: rgba(0,20,30,.45);
+    border: 2px solid rgba(0,255,255,.6); border-radius: 50%; cursor: pointer;
+    text-shadow: 0 0 8px rgba(0,255,255,.8); letter-spacing: 1px; font-size: 12px; line-height: 1.4;
+    box-shadow: 0 0 14px rgba(0,255,255,.25); touch-action: none;
+    -webkit-user-select: none; user-select: none;
+}
+.btn-zone button:active { background: rgba(0,255,255,.25); box-shadow: 0 0 26px rgba(0,255,255,.6); }
+#btnFire { right: 0; bottom: 0; width: 104px; height: 104px; font-size: 14px; color: #ff0055; border-color: rgba(255,0,85,.8); text-shadow: 0 0 8px rgba(255,0,85,.9); box-shadow: 0 0 18px rgba(255,0,85,.3); }
+#btnFire:active { background: rgba(255,0,85,.28); box-shadow: 0 0 30px rgba(255,0,85,.7); }
+#btnReload { left: 0; bottom: 0; width: 72px; height: 72px; }
+#btnSwitch { right: 0; top: 0; width: 72px; height: 72px; }
+.btn-zone button small { display: block; font-size: 9px; opacity: .7; }
+/* 触控模式下弹药信息上移，避免被右下按钮遮挡 */
+body.touch-on #ammo { top: 74px; bottom: auto; }
+
 /* 死亡画面 */
 #deathScreen .ov-title { color: #ff0055; font-size: 40px; letter-spacing: 10px; }
 #deathScreen .ov-text { color: #aaa; }
@@ -254,6 +316,15 @@ body { font-family: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace; colo
     <div id="score"><div class="pts">000000</div><div class="combo">COMBO ×1.0</div></div>
     <div id="killFeed">击杀</div>
     <div id="scopeMask"><div class="scope-lines"></div><div class="scope-ring"></div></div>
+    <!-- 手机端触控控件：左下摇杆 + 右下射击/换弹/切枪按钮 -->
+    <div id="touchControls">
+        <div id="joyZone"><div id="joyBase"><div id="joyKnob"></div></div></div>
+        <div class="btn-zone">
+            <button id="btnSwitch" type="button">切枪<small>1-4</small></button>
+            <button id="btnReload" type="button">换弹<small>R</small></button>
+            <button id="btnFire" type="button">开火<small>FIRE</small></button>
+        </div>
+    </div>
 </div>
 <div id="damageLayer"></div>
 <div id="hurtVignette"></div>
@@ -280,6 +351,13 @@ body { font-family: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace; colo
         <b>鼠标左键</b> 射击 &nbsp;·&nbsp; <b>狙击枪</b> 按住左键开镜、松开释放 &nbsp;·&nbsp; <b>R</b> 换弹<br>
         <b>1-4 / 滚轮</b> 切换武器 &nbsp;·&nbsp; <b>Esc</b> 暂停
     </div>
+    <!-- 游戏设置：手机端操作开关（持久化到 localStorage） -->
+    <div class="ov-setting">
+        <span class="ov-setting-label">手机端操作</span>
+        <button class="ov-toggle" id="btnTouchToggle" type="button">关闭</button>
+        <span class="ov-setting-note">开启后：左下摇杆移动（对应 WASD），右下按钮射击 / 换弹 / 切枪</span>
+    </div>
+    <button class="ov-btn" id="btnStartGame" type="button">开始游戏</button>
     <div class="ov-hint">按下任意键继续... 然后点击画面锁定指针</div>
 </div>
 
@@ -645,7 +723,7 @@ function movePlayer(dt) {
     const moving = (mx !== 0 || mz !== 0);
     if (moving) { const len = Math.hypot(mx, mz); mx /= len; mz /= len; }
     let spd = PLAYER.speed * (keys.ShiftLeft || keys.ShiftRight ? PLAYER.runMult : 1);
-    if (aiming) spd *= 0.5; // 开镜减速 50%
+    if (aiming) spd *= 0.2; // 开镜减速
     const dx = (fwd.x * mz + right.x * mx) * spd * dt;
     const dz = (fwd.z * mz + right.z * mx) * spd * dt;
     PLAYER.pos.x += dx; PLAYER.pos.z += dz;
@@ -1449,6 +1527,155 @@ function updateScope() {
 }
 
 /* ============================================================
+   游戏设置 / 手机端触控（localStorage 持久化）
+   ============================================================ */
+const SETTINGS_KEY = 'pl1998_fps_settings';
+let touchMode = false;
+try { touchMode = localStorage.getItem(SETTINGS_KEY) === '1'; } catch (e) {}
+
+const elTouch = document.getElementById('touchControls');
+const joyZone = document.getElementById('joyZone');
+const joyBase = document.getElementById('joyBase');
+const joyKnob = document.getElementById('joyKnob');
+const btnFire = document.getElementById('btnFire');
+const btnReload = document.getElementById('btnReload');
+const btnSwitch = document.getElementById('btnSwitch');
+const btnTouchToggle = document.getElementById('btnTouchToggle');
+
+const JOY_R = 66; // 摇杆半径 px
+const JOY_DEAD = 12; // 摇杆死区 px（对应 keys 阈值）
+let joyPointerId = null, joyCX = 0, joyCY = 0;
+let firePointerId = null;
+let viewPointerId = null, lastViewX = 0, lastViewY = 0;
+
+/* 摇杆 → keys（与 WASD 完全联动） */
+function setJoyState(x, y) {
+    let dx = x - joyCX, dy = y - joyCY;
+    const len = Math.hypot(dx, dy);
+    if (len > JOY_R) { dx = dx / len * JOY_R; dy = dy / len * JOY_R; }
+    joyKnob.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+    keys.KeyW = dy < -JOY_DEAD;
+    keys.KeyS = dy > JOY_DEAD;
+    keys.KeyA = dx < -JOY_DEAD;
+    keys.KeyD = dx > JOY_DEAD;
+}
+function joyReset() {
+    joyPointerId = null;
+    joyKnob.style.transform = 'translate(0,0)';
+    keys.KeyW = keys.KeyS = keys.KeyA = keys.KeyD = false;
+}
+joyZone.addEventListener('pointerdown', e => {
+    if (!touchMode || !started || isDead) return;
+    if (joyPointerId !== null) return;
+    joyPointerId = e.pointerId;
+    joyZone.setPointerCapture(e.pointerId);
+    const r = joyBase.getBoundingClientRect();
+    joyCX = r.left + r.width / 2; joyCY = r.top + r.height / 2;
+    setJoyState(e.clientX, e.clientY);
+    e.preventDefault();
+});
+joyZone.addEventListener('pointermove', e => {
+    if (e.pointerId !== joyPointerId) return;
+    setJoyState(e.clientX, e.clientY);
+});
+joyZone.addEventListener('pointerup', e => { if (e.pointerId === joyPointerId) joyReset(); });
+joyZone.addEventListener('pointercancel', e => { if (e.pointerId === joyPointerId) joyReset(); });
+
+/* 射击按钮（对应鼠标左键：狙击枪按住开镜、松开释放；其余按住连发） */
+btnFire.addEventListener('pointerdown', e => {
+    if (!touchMode || !started || isDead) return;
+    if (firePointerId !== null) return;
+    firePointerId = e.pointerId;
+    btnFire.setPointerCapture(e.pointerId);
+    const w = WEAPONS[curWeapon];
+    if (w.scope) {
+        if (!reloading && switchT <= 0 && w.mag > 0) aiming = true;
+    } else {
+        mouseDown = true;
+    }
+    e.preventDefault();
+});
+btnFire.addEventListener('pointerup', e => {
+    if (e.pointerId !== firePointerId) return;
+    firePointerId = null;
+    const w = WEAPONS[curWeapon];
+    if (w.scope) {
+        if (aiming) {
+            if (!reloading && switchT <= 0 && w.mag > 0) { shoot(); lastShot = 60 / w.rpm / 60; }
+            aiming = false;
+        }
+    } else {
+        mouseDown = false;
+    }
+});
+btnFire.addEventListener('pointercancel', e => {
+    if (e.pointerId !== firePointerId) return;
+    firePointerId = null; mouseDown = false; aiming = false;
+});
+/* 换弹按钮（对应 R 键） */
+btnReload.addEventListener('pointerdown', e => {
+    if (!touchMode || !started || isDead) return;
+    e.preventDefault();
+    const w = WEAPONS[curWeapon];
+    if (!reloading && w.mag < w.magSize) { reloading = true; reloadT = 0; reloadTotal = w.reload; Sfx.reload(); }
+});
+/* 切枪按钮（循环 1-4） */
+btnSwitch.addEventListener('pointerdown', e => {
+    if (!touchMode || !started || isDead) return;
+    e.preventDefault();
+    switchWeapon((curWeapon + 1) % 4);
+});
+
+/* 触控视角：非控件区域单指拖拽旋转（触控模式不依赖指针锁定） */
+document.addEventListener('pointerdown', e => {
+    if (!touchMode || !started || isDead) return;
+    if (e.pointerType !== 'touch') return;
+    if (e.target && e.target.closest && e.target.closest('#touchControls')) return;
+    if (viewPointerId !== null) return;
+    viewPointerId = e.pointerId;
+    lastViewX = e.clientX; lastViewY = e.clientY;
+    e.preventDefault();
+});
+document.addEventListener('pointermove', e => {
+    if (e.pointerId !== viewPointerId) return;
+    const dx = e.clientX - lastViewX;
+    const dy = e.clientY - lastViewY;
+    lastViewX = e.clientX; lastViewY = e.clientY;
+    camera.rotation.y -= dx * 0.004;
+    camera.rotation.x = Math.max(-1.4, Math.min(1.4, camera.rotation.x - dy * 0.004));
+});
+document.addEventListener('pointerup', e => { if (e.pointerId === viewPointerId) viewPointerId = null; });
+document.addEventListener('pointercancel', e => { if (e.pointerId === viewPointerId) viewPointerId = null; });
+
+/* 设置开关：切换 + 持久化 */
+function applyTouchSetting() {
+    try { localStorage.setItem(SETTINGS_KEY, touchMode ? '1' : '0'); } catch (e) {}
+    document.body.classList.toggle('touch-on', touchMode);
+    btnTouchToggle.textContent = touchMode ? '开启' : '关闭';
+    btnTouchToggle.classList.toggle('on', touchMode);
+    if (!touchMode) {
+        joyReset();
+        if (firePointerId !== null) { firePointerId = null; mouseDown = false; aiming = false; }
+        viewPointerId = null;
+    }
+    if (started) updateTouchControls();
+}
+btnTouchToggle.addEventListener('click', () => { touchMode = !touchMode; applyTouchSetting(); });
+
+function updateTouchControls() {
+    elTouch.style.display = (touchMode && started) ? 'block' : 'none';
+}
+
+/* 开始游戏（触控模式无需指针锁定，PointerLock 与触控并存） */
+function startGame() {
+    started = true;
+    gameState = 'playing';
+    elHud.style.display = 'block';
+    updateTouchControls();
+    if (!touchMode) controls.lock();
+}
+
+/* ============================================================
    游戏状态 / 覆盖层流程
    ============================================================ */
 let started = false;
@@ -1465,21 +1692,28 @@ document.getElementById('btnWarnOk').addEventListener('click', () => {
     warnScreen.classList.add('hidden');
     howtoScreen.classList.remove('hidden');
 });
-/* 覆盖层 2：按下任意键继续 */
+/* 覆盖层 2：按下任意键继续（或点击"开始游戏"按钮） */
+let starterRef = null;
 window.addEventListener('keydown', function onAnyKey(e) {
     if (!howtoScreen.classList.contains('hidden')) {
         howtoScreen.classList.add('hidden');
         /* 点击画面锁定指针并开始 */
-        const starter = () => {
-            started = true;
-            gameState = 'playing';
-            elHud.style.display = 'block';
-            controls.lock();
-            window.removeEventListener('click', starter);
+        starterRef = () => {
+            startGame();
+            window.removeEventListener('click', starterRef);
+            starterRef = null;
         };
-        window.addEventListener('click', starter);
+        window.addEventListener('click', starterRef);
     }
 });
+document.getElementById('btnStartGame').addEventListener('click', () => {
+    if (howtoScreen.classList.contains('hidden')) return;
+    howtoScreen.classList.add('hidden');
+    if (starterRef) { window.removeEventListener('click', starterRef); starterRef = null; }
+    startGame();
+});
+/* 初始化设置开关显示（含 localStorage 恢复） */
+applyTouchSetting();
 
 /* 指针锁定状态：锁定即开始/继续，解锁即暂停 */
 controls.addEventListener('lock', () => {
@@ -1513,10 +1747,7 @@ function updateDeath(dt) {
     if (deadTimer <= 0) {
         deathScreen.classList.add('hidden');
         resetGame();
-        started = true;
-        gameState = 'playing';
-        elHud.style.display = 'block';
-        controls.lock();
+        startGame();
     }
 }
 /* 重开 */
