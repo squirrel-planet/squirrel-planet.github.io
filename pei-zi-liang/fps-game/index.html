@@ -1552,6 +1552,7 @@ const JOY_R = 66; // 摇杆半径 px
 const JOY_DEAD = 12; // 摇杆死区 px（对应 keys 阈值）
 let joyPointerId = null, joyCX = 0, joyCY = 0;
 let firePointerId = null;
+let fireViewX = 0, fireViewY = 0;
 let viewPointerId = null, lastViewX = 0, lastViewY = 0;
 
 /* 摇杆 → keys（与 WASD 完全联动） */
@@ -1593,6 +1594,7 @@ btnFire.addEventListener('pointerdown', e => {
     if (firePointerId !== null) return;
     firePointerId = e.pointerId;
     btnFire.setPointerCapture(e.pointerId);
+    fireViewX = e.clientX; fireViewY = e.clientY;
     const w = WEAPONS[curWeapon];
     if (w.scope) {
         if (!reloading && switchT <= 0 && w.mag > 0) aiming = true;
@@ -1663,12 +1665,19 @@ document.addEventListener('pointerdown', e => {
     e.preventDefault();
 });
 document.addEventListener('pointermove', e => {
-    if (e.pointerId !== viewPointerId) return;
-    const dx = e.clientX - lastViewX;
-    const dy = e.clientY - lastViewY;
-    lastViewX = e.clientX; lastViewY = e.clientY;
-    camera.rotation.y -= dx * 0.004;
-    camera.rotation.x = Math.max(-1.4, Math.min(1.4, camera.rotation.x - dy * 0.004));
+    if (e.pointerId === viewPointerId) {
+        const dx = e.clientX - lastViewX;
+        const dy = e.clientY - lastViewY;
+        lastViewX = e.clientX; lastViewY = e.clientY;
+        camera.rotation.y -= dx * 0.004;
+        camera.rotation.x = Math.max(-1.4, Math.min(1.4, camera.rotation.x - dy * 0.004));
+    } else if (e.pointerId === firePointerId) {
+        const dx = e.clientX - fireViewX;
+        const dy = e.clientY - fireViewY;
+        fireViewX = e.clientX; fireViewY = e.clientY;
+        camera.rotation.y -= dx * 0.004;
+        camera.rotation.x = Math.max(-1.4, Math.min(1.4, camera.rotation.x - dy * 0.004));
+    }
 });
 document.addEventListener('pointerup', e => { if (e.pointerId === viewPointerId) viewPointerId = null; });
 document.addEventListener('pointercancel', e => { if (e.pointerId === viewPointerId) viewPointerId = null; });
