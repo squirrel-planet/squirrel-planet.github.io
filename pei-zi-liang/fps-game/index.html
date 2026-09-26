@@ -358,7 +358,7 @@ body.touch-on #ammo { top: 74px; bottom: auto; }
         <span class="ov-setting-note">开启后：左下摇杆移动（对应 WASD），右下按钮射击 / 换弹 / 切枪</span>
     </div>
     <button class="ov-btn" id="btnStartGame" type="button">开始游戏</button>
-    <div class="ov-hint">按下任意键继续... 然后点击画面锁定指针</div>
+    <div class="ov-hint">按下任意键或开始游戏按钮继续... 电脑端点击画面锁定指针</div>
 </div>
 
 <!-- 覆盖层 3：死亡 -->
@@ -447,6 +447,9 @@ scene.fog = new THREE.FogExp2(0x0a0e22, 0.009);  // 冷色雾效增加纵深
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 600);
 camera.position.set(0, 1.7, 8);
+/* 触控视角修复：欧拉角使用 YXZ（与 FPS 第一人称一致），pitch 独立 clamp，
+   避免默认 XYZ 在俯仰接近 ±1.4 rad 时进入万向锁导致方向颠倒 / 翻转 */
+camera.rotation.order = 'YXZ';
 
 /* 灯光：冷色环境 + 主光 */
 scene.add(new THREE.AmbientLight(0x3355aa, 0.5));
