@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>松鼠星系导航终端 | Squirrel Galaxy Terminal</title>
+<link rel="icon" type="image/png" href="../logo.png">
+<meta name="theme-color" content="#00ff9d">
+<style>
+/* ============================================================
+   松鼠星系导航终端 —— 模拟命令行视觉 · 全程点击操作
+   深空黑 / 暗蓝底色 · 青绿终端文字 · CRT 扫描线 / 噪点 / 曲面
+   ============================================================ */
+:root {
+    --bg-deep: #04060c;
+    --bg-panel: #0a1120;
+    --bg-panel-2: #0d1526;
+    --line: rgba(0, 255, 157, 0.14);
+    --green: #00ff9d;
+    --green-dim: #17b37e;
+    --green-dark: #0a3d2c;
+    --amber: #ffb347;
+    --cyan: #5eead4;
+    --red: #ff5c7a;
+    --text: #b9f5dc;
+    --text-dim: #5f8f7c;
+    --mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, 'Courier New', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+    height: 100%;
+    background: var(--bg-deep);
+    color: var(--text);
+    font-family: var(--mono);
+    overflow: hidden;
+    cursor: default;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- 深空星尘背景 ---------- */
+.starfield {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background:
+        radial-gradient(1px 1px at 12% 28%, rgba(255,255,255,.55) 0, transparent 100%),
+        radial-gradient(1px 1px at 34% 72%, rgba(255,255,255,.4) 0, transparent 100%),
+        radial-gradient(1.5px 1.5px at 58% 14%, rgba(94,234,212,.5) 0, transparent 100%),
+        radial-gradient(1px 1px at 76% 46%, rgba(255,255,255,.5) 0, transparent 100%),
+        radial-gradient(1.5px 1.5px at 90% 82%, rgba(0,255,157,.45) 0, transparent 100%),
+        radial-gradient(1px 1px at 8% 88%, rgba(255,255,255,.35) 0, transparent 100%),
+        radial-gradient(1px 1px at 44% 92%, rgba(255,179,71,.4) 0, transparent 100%),
+        radial-gradient(ellipse at 50% 40%, #0b1630 0%, #070d1b 55%, #04060c 100%);
+}
+.starfield::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(1px 1px at 22% 52%, rgba(255,255,255,.3), transparent),
+        radial-gradient(1px 1px at 66% 60%, rgba(255,255,255,.28), transparent),
+        radial-gradient(1px 1px at 82% 22%, rgba(255,255,255,.24), transparent),
+        radial-gradient(1px 1px at 40% 38%, rgba(255,255,255,.26), transparent),
+        radial-gradient(1px 1px at 92% 6%, rgba(255,255,255,.2), transparent);
+    animation: twinkle 5s ease-in-out infinite alternate;
+}
+@keyframes twinkle {
+    0%   { opacity: .5; }
+    100% { opacity: 1; }
+}
+
+/* ---------- CRT 终端外壳 ---------- */
+.crt {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    padding: clamp(10px, 2.5vw, 28px);
+}
+
+.crt::before { /* 扫描线 */
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 30;
+    background: repeating-linear-gradient(
+        to bottom,
+        rgba(0,0,0,0) 0px,
+        rgba(0,0,0,0) 2px,
+        rgba(0, 0, 0, 0.16) 3px,
+        rgba(0, 0, 0, 0) 4px
+    );
+    mix-blend-mode: multiply;
+    animation: scanmove 8s linear infinite;
+}
+@keyframes scanmove {
+    from { background-position-y: 0; }
+    to   { background-position-y: 8px; }
+}
+
+.crt::after { /* 噪点 + 曲面暗角 */
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 31;
+    background:
+        radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,.38) 100%),
+        repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,.012) 0 1px, transparent 1px 3px);
+    animation: flicker .12s infinite;
+}
+@keyframes flicker {
+    0%   { opacity: .82; }
+    50%  { opacity: .92; }
+    100% { opacity: .85; }
+}
+
+.terminal {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow:
+        0 0 0 1px rgba(0,0,0,.6),
+        0 0 42px rgba(0,255,157,.07),
+        inset 0 0 90px rgba(0, 20, 40, .55);
+    overflow: hidden;
+}
+
+/* ---------- 顶部状态栏 ---------- */
+.term-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 16px;
+    background: rgba(0, 16, 26, .85);
+    border-bottom: 1px solid var(--line);
+    font-size: clamp(10px, 1.4vw, 13px);
+    color: var(--text-dim);
+    letter-spacing: .06em;
+    user-select: none;
+    flex-shrink: 0;
+}
+.term-bar .bar-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.term-bar .bar-right { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+.bar-dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: blink 1.6s steps(2, start) infinite;
+    flex-shrink: 0;
+}
+@keyframes blink { 50% { opacity: .25; } }
+.bar-title { color: var(--green); font-weight: 700; white-space: nowrap; }
+.bar-sig { white-space: nowrap; }
+.bar-sig b { color: var(--green); font-weight: 400; }
+
+/* ---------- 屏幕主体 ---------- */
+.screen {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: clamp(14px, 2.6vw, 30px) clamp(14px, 2.8vw, 34px);
+    font-size: clamp(12px, 1.9vw, 15.5px);
+    line-height: 1.85;
+    letter-spacing: .02em;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,255,157,.35) transparent;
+}
+.screen::-webkit-scrollbar { width: 6px; }
+.screen::-webkit-scrollbar-thumb { background: rgba(0,255,157,.3); border-radius: 3px; }
+.screen::-webkit-scrollbar-track { background: transparent; }
+
+.line { white-space: pre-wrap; word-break: break-word; min-height: 1.2em; }
+.line .prompt { color: var(--green); }
+.line .dim { color: var(--text-dim); }
+.line .amber { color: var(--amber); }
+.line .cyan  { color: var(--cyan); }
+.line .red   { color: var(--red); }
+.line .hl    { color: var(--green); text-shadow: 0 0 8px rgba(0,255,157,.6); }
+.line.sys   { color: var(--text-dim); font-size: .86em; }
+.line.caret {
+    display: inline-block;
+    width: .62em;
+    height: 1.15em;
+    background: var(--green);
+    box-shadow: 0 0 10px var(--green);
+    vertical-align: text-bottom;
+    animation: cursor-blink 1s steps(2, start) infinite;
+}
+@keyframes cursor-blink { 50% { opacity: 0; } }
+
+.line .spinner {
+    display: inline-block;
+    width: .8em;
+    text-align: left;
+    color: var(--green);
+    text-shadow: 0 0 8px rgba(0,255,157,.6);
+}
+
+.glitch-line { animation: glitch-in .22s steps(2, end); }
+@keyframes glitch-in {
+    0%   { transform: translateX(0); opacity: 0; }
+    25%  { transform: translateX(-3px); opacity: .6; filter: hue-rotate(90deg); }
+    50%  { transform: translateX(3px); }
+    75%  { transform: translateX(-1px); }
+    100% { transform: translateX(0); opacity: 1; }
+}
+
+/* ---------- 星球列表条目 ---------- */
+.planet-list { margin: 6px 0 4px; display: flex; flex-direction: column; gap: 6px; }
+.planet-entry {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 9px 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(0, 30, 20, .25);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: .98em;
+    text-align: left;
+    cursor: pointer;
+    transition: all .18s ease;
+    width: 100%;
+    max-width: 640px;
+}
+.planet-entry:hover, .planet-entry:focus-visible {
+    border-color: var(--green);
+    background: rgba(0, 255, 157, .08);
+    box-shadow: 0 0 16px rgba(0,255,157,.25), inset 0 0 12px rgba(0,255,157,.08);
+    transform: translateX(4px);
+    outline: none;
+}
+.planet-entry:active { transform: scale(.99); }
+.planet-entry .p-code { color: var(--green); font-weight: 700; letter-spacing: .04em; min-width: 92px; }
+.planet-entry .p-name { color: #eafff5; font-weight: 700; min-width: 130px; }
+.planet-entry .p-desc { color: var(--text-dim); font-size: .88em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.planet-entry .p-arrow { margin-left: auto; color: var(--green); opacity: .7; font-size: 1.1em; }
+
+/* ---------- 底部选项区 ---------- */
+.options {
+    flex-shrink: 0;
+    padding: 12px 16px 16px;
+    border-top: 1px solid var(--line);
+    background: rgba(0, 14, 22, .9);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    z-index: 5;
+}
+.opt-label {
+    color: var(--text-dim);
+    font-size: clamp(10px, 1.4vw, 12px);
+    letter-spacing: .1em;
+    margin-right: 2px;
+    user-select: none;
+}
+.opt-btn {
+    font-family: var(--mono);
+    font-size: clamp(11px, 1.5vw, 13.5px);
+    color: var(--green);
+    background: transparent;
+    border: 1px solid rgba(0, 255, 157, .45);
+    border-radius: 6px;
+    padding: 7px 14px;
+    cursor: pointer;
+    letter-spacing: .04em;
+    transition: all .16s ease;
+    user-select: none;
+}
+.opt-btn:hover, .opt-btn:focus-visible {
+    background: var(--green);
+    color: #04120c;
+    box-shadow: 0 0 18px rgba(0,255,157,.55);
+    outline: none;
+    transform: translateY(-1px);
+}
+.opt-btn:active { transform: scale(.96); }
+.opt-btn.back {
+    color: var(--amber);
+    border-color: rgba(255, 179, 71, .5);
+}
+.opt-btn.back:hover {
+    background: var(--amber);
+    color: #1a1204;
+    box-shadow: 0 0 18px rgba(255,179,71,.5);
+}
+.opt-btn:disabled { opacity: .3; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ---------- 跃迁遮罩 ---------- */
+.warp {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: radial-gradient(ellipse at center, #071223 0%, #03050b 70%);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+.warp.active { display: flex; }
+.warp canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+.warp-core {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 0 24px;
+}
+.warp-code {
+    font-size: clamp(22px, 4.5vw, 44px);
+    color: var(--green);
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-shadow: 0 0 18px rgba(0,255,157,.8), 0 0 60px rgba(0,255,157,.35);
+    animation: warp-glow 1.2s ease-in-out infinite alternate;
+}
+.warp-name {
+    font-size: clamp(14px, 2.6vw, 22px);
+    color: var(--text);
+    margin-top: 8px;
+    letter-spacing: .2em;
+}
+.warp-coord {
+    margin-top: 26px;
+    font-size: clamp(11px, 1.8vw, 15px);
+    color: var(--text-dim);
+    letter-spacing: .08em;
+    line-height: 1.9;
+}
+.warp-coord .num { color: var(--cyan); display: inline-block; min-width: 7ch; text-align: right; }
+.warp-progress-wrap {
+    position: relative;
+    z-index: 2;
+    width: min(520px, 76vw);
+    margin-top: 34px;
+}
+.warp-progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: clamp(10px, 1.5vw, 12px);
+    color: var(--text-dim);
+    letter-spacing: .12em;
+    margin-bottom: 8px;
+}
+.warp-progress-track {
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(0,255,157,.12);
+    overflow: hidden;
+}
+.warp-progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--green-dim), var(--green));
+    box-shadow: 0 0 14px var(--green);
+    transition: width .12s linear;
+}
+.warp-status {
+    position: relative;
+    z-index: 2;
+    margin-top: 18px;
+    font-size: clamp(10px, 1.4vw, 12px);
+    color: var(--green-dim);
+    letter-spacing: .18em;
+    animation: blink 1s steps(2, start) infinite;
+}
+@keyframes warp-glow {
+    from { opacity: .75; }
+    to   { opacity: 1; }
+}
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 640px) {
+    .bar-right .bar-sig { display: none; }
+    .planet-entry { flex-wrap: wrap; gap: 4px 12px; padding: 8px 10px; }
+    .planet-entry .p-desc { flex-basis: 100%; white-space: normal; }
+    .planet-entry .p-arrow { display: none; }
+    .options { padding: 10px 12px 12px; gap: 8px; }
+    .opt-btn { padding: 6px 10px; }
+    .term-bar { padding: 7px 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="starfield"></div>
+
+<div class="crt">
+    <div class="terminal">
+        <!-- 顶部状态栏 -->
+        <div class="term-bar">
+            <div class="bar-left">
+                <span class="bar-dot"></span>
+                <span class="bar-title">SQ-GALAXY NAV TERMINAL</span>
+            </div>
+            <div class="bar-right">
+                <span class="bar-sig">LINK <b id="barLink">ESTABLISHING...</b></span>
+                <span class="bar-sig">COORD <b id="barCoord">SQ-001</b></span>
+                <span class="bar-sig">UPTIME <b id="barUptime">00:00:00</b></span>
+            </div>
+        </div>
+
+        <!-- 屏幕输出区 -->
+        <div class="screen" id="screen" role="log" aria-live="polite"></div>
+
+        <!-- 底部常驻选项区 -->
+        <div class="options" id="options"></div>
+    </div>
+</div>
+
+<!-- 跃迁遮罩 -->
+<div class="warp" id="warp" aria-hidden="true">
+    <canvas id="warpCanvas"></canvas>
+    <div class="warp-core">
+        <div class="warp-code" id="warpCode">SQ-000</div>
+        <div class="warp-name" id="warpName">---</div>
+        <div class="warp-coord" id="warpCoord"></div>
+    </div>
+    <div class="warp-progress-wrap">
+        <div class="warp-progress-label"><span id="warpPct">0%</span><span>WARP ENGINE</span></div>
+        <div class="warp-progress-track"><div class="warp-progress-bar" id="warpBar"></div></div>
+    </div>
+    <div class="warp-status" id="warpStatus">正在穿过松鼠星系引力透镜...</div>
+</div>
+
+<script>
+/* ============================================================
+   星球数据结构 —— 新增 / 修改星球只需编辑此数组
+   字段说明：
+     code : 星球代号（唯一）
+     name : 星球名称
+     desc : 一句话描述（列表展示）
+     tag  : 徽标文字
+     target: 跳转目标（相对当前 galaxy/ 页面的相对路径，如 ../index.html；也支持 http(s) 外链）
+             裴梓良星球页面当前不存在，同样直接跳转，不做占位提示
+   ============================================================ */
+const PLANETS = [
+    {
+        code: 'SQ-001',
+        name: '松鼠星球',
+        desc: '母星 · 起点，代码与艺术缠绕的魔法秘境',
+        tag: '母星 · 起点',
+        target: '../index.html'
+    },
+    {
+        code: 'PL-1998',
+        name: '裴梓良星球',
+        desc: '未完成 · 待命名 · 轨道不规则',
+        tag: '未完成 · 待命名',
+        target: '../pei-zi-liang/index.html'
+    }
+];
+
+/* ============================================================
+   终端核心引擎
+   ============================================================ */
+const screen = document.getElementById('screen');
+const optionsBox = document.getElementById('options');
+const warpEl = document.getElementById('warp');
+
+let typing = false;          // 正在打字
+let actionLog = [];          // 返回上一步栈：{screenHTML, logLen, state}
+let queue = [];              // 打印队列
+let warpRunning = false;
+let currentState = 'menu';   // 当前交互状态：menu / planets / help / scan
+
+/* ---------- 工具函数 ---------- */
+function el(tag, cls, html) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (html !== undefined) e.innerHTML = html;
+    return e;
+}
+
+function scrollBottom() {
+    screen.scrollTop = screen.scrollHeight;
+}
+
+/* 打印一行（无打字机效果） */
+function printLine(cls, html) {
+    const line = el('div', 'line' + (cls ? ' ' + cls : ''));
+    if (html) line.innerHTML = html;
+    screen.appendChild(line);
+    scrollBottom();
+    return line;
+}
+
+/* 带光标占位的行：先创建，打字时追加文本 */
+function openTypingLine(cls) {
+    const line = el('div', 'line' + (cls ? ' ' + cls : ''));
+    const span = el('span');
+    span.className = 'typed';
+    const caret = el('span', 'caret');
+    line.appendChild(span);
+    line.appendChild(caret);
+    screen.appendChild(line);
+    scrollBottom();
+    return { line, span, caret };
+}
+
+/* 打字机：逐字打印 */
+function typewrite(text, lineRef, speed, onDone) {
+    typing = true;
+    let i = 0;
+    const step = () => {
+        if (i < text.length) {
+            lineRef.span.textContent = text.slice(0, ++i);
+            scrollBottom();
+            setTimeout(step, speed);
+        } else {
+            lineRef.caret.remove();
+            typing = false;
+            if (onDone) onDone();
+        }
+    };
+    step();
+}
+
+/* 随机时长（ms） */
+function randomMs(min, max) {
+    return min + Math.floor(Math.random() * (max - min + 1));
+}
+
+/* 加载行：逐字打印文案后，尾部 "|/-\" spinner 随机旋转，定格后回调 */
+function loadLine(text, cls, onDone) {
+    const lineRef = openTypingLine(cls);
+    typewrite(text, lineRef, 14, () => {
+        const spin = el('span', 'spinner', '|');
+        lineRef.line.appendChild(spin);
+        const chars = ['|', '/', '-', '\\'];
+        let idx = 0;
+        const dur = randomMs(300, 1200);
+        const t0 = Date.now();
+        const timer = setInterval(() => {
+            idx = (idx + 1) % chars.length;
+            spin.textContent = chars[idx];
+            scrollBottom();
+            if (Date.now() - t0 >= dur) {
+                clearInterval(timer);
+                spin.remove();
+                if (onDone) onDone();
+            }
+        }, 90);
+    });
+}
+
+/* 简易定时延迟 */
+const delay = ms => new Promise(r => setTimeout(r, ms));
+
+/* 清空屏幕 */
+function clearScreen() {
+    screen.innerHTML = '';
+}
+
+/* ============================================================
+   选项渲染 —— 全程点击，底部常驻
+   ============================================================ */
+function renderOptions(btns) {
+    optionsBox.innerHTML = '';
+    const label = el('span', 'opt-label', '▸ 下一步：');
+    optionsBox.appendChild(label);
+    btns.forEach(b => {
+        const btn = el('button', 'opt-btn' + (b.back ? ' back' : ''), b.text);
+        if (b.disabled) btn.disabled = true;
+        btn.addEventListener('click', b.action);
+        optionsBox.appendChild(btn);
+    });
+}
+
+/* 返回上一步（常驻按钮，由各状态调用） */
+function backBtn() {
+    return {
+        text: '◂ 返回上一步',
+        back: true,
+        disabled: actionLog.length === 0,
+        action: goBack
+    };
+}
+
+function snapshot() {
+    return {
+        screenHTML: screen.innerHTML,
+        logLen: actionLog.length,
+        state: currentState
+    };
+}
+
+/* 根据状态重渲染底部选项（保证按钮事件全部重新绑定） */
+function renderStateOptions(state) {
+    if (state === 'planets') {
+        renderOptions([
+            { text: '[ 查看可用指令 ]', action: showHelp },
+            { text: '[ 扫描星系状态 ]', action: showScan },
+            { text: '[ 返回松鼠星球 ]', action: goHome },
+            backBtn()
+        ]);
+    } else {
+        showMainMenu();
+    }
+}
+
+function goBack() {
+    if (actionLog.length === 0 || typing || warpRunning) return;
+    const snap = actionLog.pop();
+    screen.innerHTML = snap.screenHTML;
+    while (actionLog.length > snap.logLen) actionLog.pop();
+    currentState = snap.state;
+    renderStateOptions(currentState);
+    printLine('dim', '> 已返回上一步。');
+    scrollBottom();
+}
+
+/* 主菜单 */
+function showMainMenu() {
+    currentState = 'menu';
+    renderOptions([
+        { text: '[ 查看可用指令 ]', action: showHelp },
+        { text: '[ 列出可抵达星球 ]', action: showPlanets },
+        { text: '[ 扫描星系状态 ]', action: showScan },
+        { text: '[ 重新启动命令行 ]', action: restartTerm },
+        { text: '[ 返回松鼠星球 ]', action: goHome },
+        backBtn()
+    ]);
+}
+
+/* ---------- 各功能 ---------- */
+function showHelp() {
+    const snap = snapshot();
+    printLine('hl', '> 可用指令（均为点击操作）：');
+    delay(220).then(() => {
+        printLine('', '  <span class="prompt">[</span> 查看可用指令 <span class="prompt">]</span> —— 显示本帮助');
+        printLine('', '  <span class="prompt">[</span> 列出可抵达星球 <span class="prompt">]</span> —— 扫描并列出星系内星球');
+        printLine('', '  <span class="prompt">[</span> 扫描星系状态 <span class="prompt">]</span> —— 检查导航系统与跃迁引擎');
+        printLine('', '  <span class="prompt">[</span> 重新启动命令行 <span class="prompt">]</span> —— 清空终端并重播完整启动流程');
+        printLine('', '  <span class="prompt">[</span> 返回松鼠星球 <span class="prompt">]</span> —— 结束导航，返回母星');
+        printLine('dim', '> 提示：点击下方星球条目即可发起跃迁，无需输入任何命令。');
+        actionLog.push(snap);
+        showMainMenu();
+    });
+}
+
+function showPlanets() {
+    const snap = snapshot();
+    printLine('hl', '> 正在扫描松鼠星系航路图...');
+    delay(400).then(() => {
+        printLine('dim', '> 扫描完成，检测到 ' + PLANETS.length + ' 颗可抵达星球：');
+        const list = el('div', 'planet-list');
+        PLANETS.forEach(p => {
+            const btn = el('button', 'planet-entry',
+                '<span class="p-code">' + p.code + '</span>' +
+                '<span class="p-name">' + p.name + '</span>' +
+                '<span class="p-desc">' + p.desc + '</span>' +
+                '<span class="p-arrow">▶</span>');
+            btn.addEventListener('click', () => jumpToPlanet(p));
+            btn.setAttribute('aria-label', '跃迁到 ' + p.code + ' ' + p.name);
+            list.appendChild(btn);
+        });
+        screen.appendChild(list);
+        printLine('dim', '> 点击任意星球条目发起跃迁。');
+        scrollBottom();
+        actionLog.push(snap);
+        currentState = 'planets';
+        renderOptions([
+            { text: '[ 查看可用指令 ]', action: showHelp },
+            { text: '[ 扫描星系状态 ]', action: showScan },
+            { text: '[ 返回松鼠星球 ]', action: goHome },
+            backBtn()
+        ]);
+    });
+}
+
+function showScan() {
+    const snap = snapshot();
+    printLine('hl', '> 正在扫描星系状态...');
+    delay(350).then(() => {
+        printLine('', '  <span class="prompt">[</span> 神经链接 ........ <span class="hl">已建立</span>');
+        printLine('', '  <span class="prompt">[</span> 跃迁引擎 ........ <span class="hl">就绪</span>');
+        printLine('', '  <span class="prompt">[</span> 引力透镜 ........ <span class="cyan">稳定</span>');
+        printLine('', '  <span class="prompt">[</span> 已登记星球 ...... <span class="amber">' + PLANETS.length + '</span> 颗');
+        printLine('', '  <span class="prompt">[</span> 航道安全 ........ <span class="hl">通畅</span>');
+        printLine('dim', '> 系统正常。随时可以发起跃迁。');
+        actionLog.push(snap);
+        showMainMenu();
+    });
+}
+
+function restartTerm() {
+    // 重新启动命令行：先重置全局状态，清空底部选项区，再清屏重播完整启动流程
+    typing = false;
+    queue = [];
+    actionLog = [];
+    warpRunning = false;
+    currentState = 'menu';
+    resetUptime();
+    optionsBox.innerHTML = '';   // 隐藏底部选项，启动流程播完由 showMainMenu 重新渲染
+    clearScreen();
+    bootGreeting();
+}
+
+function goHome() {
+    if (warpRunning) return;
+    window.location.href = resolveTarget('../index.html');
+}
+
+/* 跳转路径解析：http(s) 外链原样返回；其余按相对路径直接使用（相对当前 galaxy/ 页面，本地 file:// 打开也正常） */
+function resolveTarget(target) {
+    if (/^https?:\/\//.test(target)) return target;
+    return target;
+}
+
+/* ============================================================
+   跃迁动画：星流粒子 + 坐标跳动 + 进度条
+   ============================================================ */
+function jumpToPlanet(planet) {
+    if (warpRunning || typing) return;
+    warpRunning = true;
+
+    // 记录跃迁前的选项（用于返回）
+    const snap = snapshot();
+
+    // 输出跃迁日志
+    printLine('glitch-line', '> 收到跃迁指令：<span class="hl">' + planet.code + '</span> <span class="cyan">' + planet.name + '</span>');
+    printLine('', '> 正在校准航向、预热跃迁引擎...');
+
+    actionLog.push(snap);
+    renderOptions([{ text: '[ 跃迁进行中... ]', disabled: true, action: () => {} }]);
+
+    setTimeout(() => {
+        startWarp(planet);
+    }, 600);
+}
+
+function startWarp(planet) {
+    warpEl.classList.add('active');
+    document.getElementById('warpCode').textContent = planet.code;
+    document.getElementById('warpName').textContent = planet.name;
+    document.getElementById('warpBar').style.width = '0%';
+    document.getElementById('warpPct').textContent = '0%';
+    document.getElementById('warpStatus').textContent = '正在穿过松鼠星系引力透镜...';
+
+    const canvas = document.getElementById('warpCanvas');
+    const ctx = canvas.getContext('2d');
+    let W, H;
+    const resize = () => { W = canvas.width = canvas.offsetWidth; H = canvas.height = canvas.offsetHeight; };
+    resize();
+    window.addEventListener('resize', resize);
+
+    // 星流粒子：从中心向外放射的拖尾短线
+    const stars = [];
+    const STAR_N = 160;
+    for (let i = 0; i < STAR_N; i++) {
+        stars.push({
+            ang: Math.random() * Math.PI * 2,
+            dist: Math.random() * 0.35,
+            speed: 0.012 + Math.random() * 0.03,
+            len: 0.06 + Math.random() * 0.14,
+            size: 0.8 + Math.random() * 1.6
+        });
+    }
+    let raf = 0;
+    function drawStars(progress) {
+        ctx.clearRect(0, 0, W, H);
+        const cx = W / 2, cy = H / 2;
+        const maxR = Math.max(W, H) * 0.75;
+        stars.forEach(s => {
+            const p = progress * (0.4 + s.speed * 28);
+            const d = s.dist * maxR + p * maxR * (0.55 + s.speed * 10);
+            const x1 = cx + Math.cos(s.ang) * d;
+            const y1 = cy + Math.sin(s.ang) * d;
+            const x2 = cx + Math.cos(s.ang) * (d - s.len * maxR);
+            const y2 = cy + Math.sin(s.ang) * (d - s.len * maxR);
+            ctx.strokeStyle = 'rgba(0,255,157,' + (0.9 - progress * 0.5) + ')';
+            ctx.lineWidth = s.size;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+        });
+        // 中心光晕
+        const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 90 + progress * 60);
+        glow.addColorStop(0, 'rgba(0,255,157,.5)');
+        glow.addColorStop(1, 'transparent');
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 150 + progress * 80, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // 坐标跳动
+    const coordEl = document.getElementById('warpCoord');
+    function randomCoord(base) {
+        const jitter = n => n + Math.floor((Math.random() - 0.5) * 40);
+        coordEl.innerHTML =
+            'X <span class="num">' + jitter(base.x).toString().padStart(8, '0') + '</span>' +
+            '&nbsp;&nbsp;Y <span class="num">' + jitter(base.y).toString().padStart(8, '0') + '</span>' +
+            '&nbsp;&nbsp;Z <span class="num">' + jitter(base.z).toString().padStart(8, '0') + '</span>';
+    }
+    const baseCoord = {
+        x: 700000 + planet.code.charCodeAt(0) * 997,
+        y: 300000 + planet.code.charCodeAt(1) * 613,
+        z: 100000 + planet.code.charCodeAt(2) * 331
+    };
+
+    // 进度条推进
+    let progress = 0;
+    const DURATION = 2600;
+    const t0 = Date.now();
+    const statusMsgs = [
+        '正在穿过松鼠星系引力透镜...',
+        '坐标锁定 · 曲率引擎点火',
+        '正在接近目标星球轨道...',
+        '跃迁完成，正在建立神经链接'
+    ];
+    const tick = () => {
+        progress = Math.min(1, (Date.now() - t0) / DURATION);
+        const pct = Math.floor(progress * 100);
+        document.getElementById('warpBar').style.width = pct + '%';
+        document.getElementById('warpPct').textContent = pct + '%';
+        const msgIdx = Math.min(statusMsgs.length - 1, Math.floor(progress * statusMsgs.length));
+        document.getElementById('warpStatus').textContent = statusMsgs[msgIdx];
+        randomCoord(baseCoord);
+        drawStars(progress);
+        if (progress < 1) {
+            raf = requestAnimationFrame(tick);
+        } else {
+            cancelAnimationFrame(raf);
+            window.removeEventListener('resize', resize);
+            // 跃迁完成 → 直接跳转（裴梓良星球页面当前不存在也直接跳转，不做占位提示）
+            window.location.href = resolveTarget(planet.target);
+        }
+    };
+    tick();
+}
+
+/* ============================================================
+   开机欢迎流程 —— 严格按命令行格式逐行输出
+   load 步骤：文案 + "|/-\" spinner 随机时长加载后定格
+   普通步骤：逐字打印
+   ============================================================ */
+function bootGreeting() {
+    document.getElementById('barLink').textContent = 'ESTABLISHING...';
+    setTimeout(() => {
+        document.getElementById('barLink').textContent = 'ONLINE';
+        document.getElementById('barLink').style.color = 'var(--green)';
+    }, 1500);
+
+    const steps = [
+        { text: '[INFO] init...', cls: 'dim', load: true },
+        { text: '[======= 100% =======]', cls: 'hl' },
+        { text: '[INFO] init done', cls: 'dim' },
+        { text: 'Hello World!', cls: 'cyan' },
+        { text: '[INFO] get user messge...', cls: 'dim', load: true },
+        { text: '[INFO] start command...', cls: 'dim', load: true },
+        { text: 'Done.', cls: 'hl' },
+        { text: 'SQ-Galaxy nav terminal', cls: 'hl' },
+        { text: '版本 1.0.0', cls: 'cyan' },
+        { text: '检测到未授权访客。', cls: 'red' },
+        { text: '正在建立神经链接...', cls: 'cyan', load: true },
+        { text: '完成。', cls: 'hl' },
+        { text: '欢迎来到松鼠星系导航终端。', cls: 'hl' },
+        { text: '当前坐标：SQ-001 松鼠星系 · 母星轨道', cls: 'cyan' },
+        { text: '系统已就绪。请点击下方选项开始导航。', cls: 'amber' },
+        { text: '>', cls: 'prompt' }
+    ];
+    runBootSteps(steps, showMainMenu);
+}
+
+/* 顺序执行开机步骤：load 步骤带 spinner 加载，普通步骤逐字打印 */
+function runBootSteps(steps, onDone) {
+    let i = 0;
+    function next() {
+        if (i >= steps.length) { if (onDone) onDone(); return; }
+        const s = steps[i++];
+        if (s.load) {
+            loadLine(s.text, s.cls, () => setTimeout(next, 160));
+        } else {
+            const lineRef = openTypingLine(s.cls);
+            typewrite(s.text, lineRef, 16, () => setTimeout(next, 130));
+        }
+    }
+    next();
+}
+
+/* ---------- 顶部状态栏：UPTIME 计时（重启时重置） ---------- */
+let uptimeStart = Date.now();
+function resetUptime() {
+    uptimeStart = Date.now();
+    const up = document.getElementById('barUptime');
+    if (up) up.textContent = '00:00:00';
+}
+(function clock() {
+    const up = document.getElementById('barUptime');
+    setInterval(() => {
+        const s = Math.floor((Date.now() - uptimeStart) / 1000);
+        const hh = String(Math.floor(s / 3600)).padStart(2, '0');
+        const mm = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+        const ss = String(s % 60).padStart(2, '0');
+        up.textContent = hh + ':' + mm + ':' + ss;
+    }, 1000);
+})();
+
+/* ---------- 键盘无障碍：Tab 可切换焦点，方向键上下滚动 ---------- */
+document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); screen.scrollTop += 60; }
+    if (e.key === 'ArrowUp') { e.preventDefault(); screen.scrollTop -= 60; }
+});
+
+/* ---------- 启动 ---------- */
+bootGreeting();
+</script>
+</body>
+</html>

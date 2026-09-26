@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>裴梓良星球 · PL-1998 | 等待命名者</title>
+<link rel="icon" type="image/x-icon" href="pei-zi-liang.ico">
+<meta name="theme-color" content="#0a0814">
+<style>
+/* ============================================================
+   裴梓良星球 PL-1998 —— 未完成 · 待命名 · 不规则 · 正在成为
+   深空黑 / 暗蓝 / 暗紫 · 青绿 / 琥珀 / 警示红
+   纵向平滑滚动单页 · 终端感 · 扫描线 / 噪点 / glitch
+   纯 HTML + CSS + 原生 JS，无外部依赖，file:// 本地打开正常
+   ============================================================ */
+:root {
+    --bg-deep: #04050b;
+    --bg-space: #060714;
+    --bg-violet: #0a0817;
+    --bg-dark: #030308;
+    --line: rgba(0, 255, 157, 0.16);
+    --green: #00ff9d;
+    --green-dim: #14b57e;
+    --amber: #ffb347;
+    --red: #ff5c7a;
+    --cyan: #5eead4;
+    --text: #b9f5dc;
+    --text-dim: #58786c;
+    --mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, 'Courier New', monospace;
+    --sans: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background: var(--bg-deep);
+    color: var(--text);
+    font-family: var(--mono);
+    overflow-x: hidden;
+    cursor: default;
+    -webkit-font-smoothing: antialiased;
+    transition: background 1.2s ease;
+}
+
+/* 滚动进度驱动的氛围：越往下越暗、越静、越接近混乱 */
+body[data-depth="1"] { background: var(--bg-space); }
+body[data-depth="2"] { background: var(--bg-violet); }
+body[data-depth="3"] { background: var(--bg-dark); }
+
+::selection { background: rgba(0, 255, 157, .25); }
+
+/* ---------- 背景层：星尘 + 随滚动加深 ---------- */
+.bg {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background:
+        radial-gradient(1px 1px at 12% 28%, rgba(255,255,255,.5) 0, transparent 100%),
+        radial-gradient(1px 1px at 34% 72%, rgba(255,255,255,.36) 0, transparent 100%),
+        radial-gradient(1.5px 1.5px at 58% 14%, rgba(94,234,212,.45) 0, transparent 100%),
+        radial-gradient(1px 1px at 76% 46%, rgba(255,255,255,.45) 0, transparent 100%),
+        radial-gradient(1.5px 1.5px at 90% 82%, rgba(0,255,157,.4) 0, transparent 100%),
+        radial-gradient(1px 1px at 8% 88%, rgba(255,255,255,.3) 0, transparent 100%),
+        radial-gradient(1px 1px at 44% 92%, rgba(255,179,71,.35) 0, transparent 100%),
+        radial-gradient(ellipse at 50% 40%, #0c1030 0%, #080a1c 55%, #04050b 100%);
+    transition: filter 1.4s ease, opacity 1.4s ease;
+}
+body[data-depth="2"] .bg { filter: brightness(.82) saturate(.85); }
+body[data-depth="3"] .bg { filter: brightness(.55) saturate(.6) contrast(1.05); }
+
+/* ---------- 扫描线 / 噪点 / 暗角 ---------- */
+.scanlines {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        to bottom,
+        rgba(0,0,0,0) 0px,
+        rgba(0,0,0,0) 2px,
+        rgba(0, 0, 0, 0.14) 3px,
+        rgba(0, 0, 0, 0) 4px
+    );
+    mix-blend-mode: multiply;
+    animation: scanmove 9s linear infinite;
+}
+@keyframes scanmove {
+    from { background-position-y: 0; }
+    to   { background-position-y: 8px; }
+}
+.noise {
+    position: fixed;
+    inset: 0;
+    z-index: 91;
+    pointer-events: none;
+    opacity: .05;
+    background:
+        repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,.6) 0 1px, transparent 1px 3px),
+        radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,.42) 100%);
+    animation: flicker .14s infinite;
+}
+@keyframes flicker {
+    0%   { opacity: .04; }
+    50%  { opacity: .06; }
+    100% { opacity: .045; }
+}
+
+/* ---------- 区块通用 ---------- */
+section {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 9vh 7vw 11vh;
+    scroll-margin-top: 0;
+}
+.sec-inner {
+    width: 100%;
+    max-width: 1080px;
+    margin: 0 auto;
+    opacity: 0;
+    transform: translateY(36px);
+    transition: opacity 1s ease, transform 1s ease;
+}
+.sec-inner.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* 区块标题（终端风格小标） */
+.sec-tag {
+    font-size: 12px;
+    letter-spacing: 4px;
+    color: var(--text-dim);
+    margin-bottom: 26px;
+    text-transform: uppercase;
+}
+.sec-tag b { color: var(--green); font-weight: normal; }
+
+/* glitch 标题 */
+.glitch {
+    position: relative;
+    display: inline-block;
+    color: var(--text);
+}
+.glitch::before,
+.glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    overflow: hidden;
+    pointer-events: none;
+}
+.glitch::before {
+    color: var(--red);
+    transform: translate(-2px, -1px);
+    clip-path: inset(0 0 62% 0);
+    animation: glitchA 3.2s infinite steps(1);
+    opacity: .7;
+}
+.glitch::after {
+    color: var(--cyan);
+    transform: translate(2px, 1px);
+    clip-path: inset(64% 0 0 0);
+    animation: glitchB 2.7s infinite steps(1);
+    opacity: .7;
+}
+@keyframes glitchA {
+    0%, 88%, 100% { clip-path: inset(0 0 62% 0); transform: translate(-2px, -1px); }
+    90% { clip-path: inset(12% 0 40% 0); transform: translate(-4px, 1px); }
+    92% { clip-path: inset(55% 0 8% 0); transform: translate(2px, -2px); }
+    94% { clip-path: inset(0 0 62% 0); transform: translate(-2px, -1px); }
+}
+@keyframes glitchB {
+    0%, 86%, 100% { clip-path: inset(64% 0 0 0); transform: translate(2px, 1px); }
+    88% { clip-path: inset(30% 0 35% 0); transform: translate(3px, -1px); }
+    91% { clip-path: inset(80% 0 0 0); transform: translate(-3px, 2px); }
+    93% { clip-path: inset(64% 0 0 0); transform: translate(2px, 1px); }
+}
+
+/* ============================================================
+   区块 1：抵达
+   ============================================================ */
+#arrival {
+    justify-content: flex-end;
+}
+.boot-log {
+    width: 94%;
+    max-width: 980px;
+    min-height: 30vh;
+    font-size: 13px;
+    line-height: 1.75;
+    color: var(--text-dim);
+    border-left: 1px solid var(--line);
+    padding: 4px 0 4px 20px;
+}
+.boot-log .log-line { white-space: pre-wrap; }
+.boot-log .log-line .ok { color: var(--green); }
+.boot-log .log-line .warn { color: var(--amber); }
+.boot-log .log-line .caret {
+    display: inline-block;
+    width: 7px;
+    height: 14px;
+    background: var(--green);
+    vertical-align: -2px;
+    animation: blink 1s steps(1) infinite;
+    margin-left: 2px;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+.arrival-title {
+    margin-top: 24px;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 1.2s ease .2s, transform 1.2s ease .2s;
+}
+.arrival-title.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+.arrival-title .code {
+    font-size: clamp(14px, 2.4vw, 22px);
+    letter-spacing: 6px;
+    color: var(--cyan);
+    margin-bottom: 14px;
+}
+.arrival-title h1 {
+    font-family: var(--sans);
+    font-size: clamp(38px, 7vw, 76px);
+    font-weight: 300;
+    letter-spacing: 10px;
+    color: var(--text);
+    text-shadow: 0 0 30px rgba(0, 255, 157, .25);
+}
+.arrival-title .sub {
+    margin-top: 18px;
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+}
+.arrival-title .sub em {
+    font-style: normal;
+    color: var(--amber);
+}
+
+.scroll-hint {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 12px;
+    letter-spacing: 3px;
+    opacity: 0;
+    transition: opacity 1.5s ease 2.2s;
+}
+.scroll-hint.show { opacity: 1; }
+.scroll-hint .arrow {
+    display: block;
+    margin: 8px auto 0;
+    width: 18px;
+    height: 18px;
+    border-right: 1px solid var(--green);
+    border-bottom: 1px solid var(--green);
+    transform: rotate(45deg);
+    animation: hintdown 1.6s ease-in-out infinite;
+}
+@keyframes hintdown {
+    0%, 100% { opacity: .25; transform: rotate(45deg) translate(0, 0); }
+    50%      { opacity: 1;   transform: rotate(45deg) translate(4px, 4px); }
+}
+
+/* ============================================================
+   区块 2：星球档案（不稳定数据面板）
+   ============================================================ */
+#dossier { justify-content: center; }
+.dossier-panel {
+    width: 100%;
+    max-width: 780px;
+    border: 1px solid var(--line);
+    border-top: 2px solid var(--green);
+    background: rgba(8, 12, 24, .55);
+    padding: 30px 34px;
+    position: relative;
+    overflow: hidden;
+}
+.dossier-panel::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(to bottom, transparent, var(--green), transparent);
+    opacity: .35;
+}
+.dossier-panel::after { /* 面板断线角 */
+    content: "";
+    position: absolute;
+    right: -1px;
+    bottom: -1px;
+    width: 46px;
+    height: 46px;
+    border-right: 1px dashed rgba(255, 92, 122, .55);
+    border-bottom: 1px dashed rgba(255, 92, 122, .55);
+    background: transparent;
+    pointer-events: none;
+}
+.dossier-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 12px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    margin-bottom: 22px;
+    border-bottom: 1px dashed rgba(255, 255, 255, .12);
+    padding-bottom: 12px;
+}
+.dossier-head .status {
+    color: var(--amber);
+    animation: softblink 2.2s ease-in-out infinite;
+}
+@keyframes softblink { 50% { opacity: .35; } }
+
+.dossier-row {
+    display: grid;
+    grid-template-columns: 200px 1fr auto;
+    gap: 14px;
+    align-items: baseline;
+    padding: 11px 0;
+    border-bottom: 1px dashed rgba(255, 255, 255, .06);
+    font-size: 14px;
+}
+.dossier-row:last-child { border-bottom: none; }
+.dossier-row .k {
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    font-size: 13px;
+}
+.dossier-row .v { color: var(--text); }
+.dossier-row .v .unit { color: var(--text-dim); font-size: 12px; margin-left: 4px; }
+.dossier-row .v.missing {
+    color: var(--red);
+    animation: softblink 1.6s ease-in-out infinite;
+}
+.dossier-row .v.drift {
+    color: var(--amber);
+}
+.dossier-row .flag {
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    justify-self: end;
+}
+
+/* 不稳定数值跳动 */
+.jitter {
+    display: inline-block;
+    animation: jitterN 2.4s infinite steps(12);
+}
+@keyframes jitterN {
+    0%   { transform: translate(0, 0); }
+    20%  { transform: translate(1px, -1px); }
+    40%  { transform: translate(-1px, 1px); }
+    60%  { transform: translate(2px, 0); }
+    80%  { transform: translate(-2px, -1px); }
+    100% { transform: translate(0, 0); }
+}
+/* 数值本身在轻微变化（伪随机跳数字） */
+.numroll {
+    display: inline-block;
+}
+.numroll::after {
+    content: "";
+    display: inline-block;
+    margin-left: 6px;
+    width: 9px;
+    height: 9px;
+    border: 1px solid var(--amber);
+    border-radius: 50%;
+    animation: dotpulse 1.8s ease-in-out infinite;
+    vertical-align: 1px;
+}
+@keyframes dotpulse {
+    0%, 100% { opacity: .2; transform: scale(.8); }
+    50%      { opacity: 1;  transform: scale(1.15); }
+}
+
+/* ============================================================
+   区块 3：未完成的结构（SVG 线稿生长动画）
+   ============================================================ */
+#structures { justify-content: center; }
+.struct-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 26px;
+    width: 100%;
+}
+.struct-card {
+    border: 1px solid var(--line);
+    background: rgba(8, 12, 24, .4);
+    padding: 24px 20px 26px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color .4s ease, transform .4s ease, box-shadow .4s ease;
+}
+.struct-card:hover {
+    border-color: rgba(0, 255, 157, .4);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, .45), 0 0 18px rgba(0, 255, 157, .06);
+}
+.struct-card::before {
+    content: attr(data-idx);
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, .14);
+}
+.struct-card svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-bottom: 18px;
+}
+.struct-card svg path,
+.struct-card svg line,
+.struct-card svg polyline {
+    fill: none;
+    stroke: var(--green);
+    stroke-width: 1.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 1.8s cubic-bezier(.4, 0, .2, 1), stroke .3s ease;
+    animation: none;
+}
+.struct-card.grown svg path,
+.struct-card.grown svg line,
+.struct-card.grown svg polyline {
+    stroke-dashoffset: 0;
+}
+/* 结构 "正在合拢" 的呼吸感：已长成后轻微明暗脉动 */
+.struct-card.grown svg { animation: growPulse 5s ease-in-out infinite; }
+@keyframes growPulse {
+    0%, 100% { filter: brightness(1); }
+    50%      { filter: brightness(.72); }
+}
+/* 独白中未完成部分：部分文字断线 */
+.struct-card .mono-broken {
+    color: var(--text-dim);
+    text-decoration: line-through;
+    text-decoration-color: rgba(255, 92, 122, .6);
+    text-decoration-style: dashed;
+}
+.struct-card h3 {
+    font-family: var(--sans);
+    font-size: 17px;
+    font-weight: 400;
+    letter-spacing: 2px;
+    color: var(--text);
+    margin-bottom: 10px;
+}
+.struct-card h3 .en {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-top: 5px;
+}
+.struct-card .monologue {
+    font-size: 13px;
+    line-height: 1.9;
+    color: var(--green-dim);
+    border-left: 1px solid rgba(255, 179, 71, .4);
+    padding-left: 12px;
+    margin-top: 12px;
+    font-style: italic;
+}
+
+/* 结构生长遮罩行（出现于卡片顶部） */
+.struct-card .grow-tip {
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--green);
+    background: rgba(4, 5, 11, .85);
+    padding: 3px 8px;
+    opacity: 0;
+    transition: opacity .6s ease 1.4s;
+    z-index: 2;
+}
+.struct-card.grown .grow-tip { opacity: 1; }
+
+/* ============================================================
+   区块 4：等待命名者（情绪高点）
+   ============================================================ */
+#naming {
+    justify-content: center;
+    text-align: center;
+    min-height: 110vh;
+}
+#naming .sec-inner {
+    max-width: 760px;
+    position: relative;
+}
+.naming-kicker {
+    font-size: 12px;
+    letter-spacing: 5px;
+    color: var(--text-dim);
+    margin-bottom: 34px;
+    text-transform: uppercase;
+}
+.naming-line {
+    font-family: var(--sans);
+    font-size: clamp(22px, 4vw, 40px);
+    font-weight: 300;
+    line-height: 1.8;
+    letter-spacing: 4px;
+    color: var(--text);
+    margin-bottom: 30px;
+}
+.naming-line .hl {
+    color: var(--green);
+    text-shadow: 0 0 22px rgba(0, 255, 157, .35);
+}
+.naming-line .dim {
+    color: var(--text-dim);
+}
+.naming-sub {
+    font-size: 13px;
+    line-height: 2.2;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    max-width: 620px;
+    margin: 0 auto 26px;
+}
+.naming-sub b { color: var(--amber); font-weight: normal; }
+
+/* 混乱暗示 */
+.storm-hint {
+    margin-top: 60px;
+    font-size: 14px;
+    letter-spacing: 4px;
+    color: var(--red);
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 1.4s ease, transform 1.4s ease;
+    text-shadow: 0 0 14px rgba(255, 92, 122, .4);
+}
+.sec-inner.visible .storm-hint { opacity: 1; transform: translateY(0); }
+.storm-hint .noise-bar {
+    display: inline-block;
+    width: 130px;
+    height: 2px;
+    margin: 0 12px;
+    background: repeating-linear-gradient(90deg, var(--red) 0 6px, transparent 6px 12px);
+    vertical-align: middle;
+    animation: softblink 1.4s steps(1) infinite;
+}
+
+/* ============================================================
+   区块 5：游戏入口（最后一栏）
+   ============================================================ */
+#game-entry {
+    min-height: 100vh;
+    justify-content: center;
+    text-align: center;
+    padding-bottom: 12vh;
+}
+.entry-eyebrow {
+    font-size: 11px;
+    letter-spacing: 5px;
+    color: var(--text-dim);
+    margin-bottom: 30px;
+    text-transform: uppercase;
+}
+.entry-line {
+    font-family: var(--sans);
+    font-size: clamp(26px, 5.2vw, 52px);
+    font-weight: 300;
+    letter-spacing: 6px;
+    color: var(--text);
+    min-height: 1.6em;
+    margin-bottom: 44px;
+    text-shadow: 0 0 40px rgba(255, 92, 122, .18);
+}
+.entry-line .caret {
+    display: inline-block;
+    width: 8px;
+    height: 1em;
+    background: var(--amber);
+    vertical-align: -2px;
+    animation: blink 1s steps(1) infinite;
+    margin-left: 6px;
+}
+.entry-line .chaos {
+    color: var(--red);
+}
+
+.btn-chaos {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 16px;
+    letter-spacing: 4px;
+    color: var(--green);
+    background: transparent;
+    border: 1px solid rgba(0, 255, 157, .6);
+    padding: 16px 40px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all .3s ease;
+    user-select: none;
+    opacity: 0;
+    transform: translateY(14px);
+}
+.sec-inner.visible .btn-chaos { opacity: 1; transform: translateY(0); transition: opacity 1s ease .6s, transform 1s ease .6s, background .3s ease, color .3s ease, box-shadow .3s ease, border-color .3s ease; }
+.btn-chaos::before {
+    content: "";
+    position: absolute;
+    left: -80%;
+    top: 0;
+    bottom: 0;
+    width: 60%;
+    background: linear-gradient(100deg, transparent, rgba(0, 255, 157, .18), transparent);
+    transform: skewX(-20deg);
+    transition: left .6s ease;
+}
+.btn-chaos:hover {
+    background: rgba(0, 255, 157, .12);
+    color: #d6ffe9;
+    box-shadow: 0 0 34px rgba(0, 255, 157, .35), inset 0 0 18px rgba(0, 255, 157, .08);
+    border-color: var(--green);
+}
+.btn-chaos:hover::before { left: 130%; }
+.btn-chaos:active { transform: translateY(2px) scale(.99); }
+.btn-chaos:focus-visible { outline: 1px solid var(--green); outline-offset: 4px; }
+
+.entry-foot {
+    margin-top: 56px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: rgba(88, 120, 108, .7);
+}
+.entry-foot .divider {
+    display: inline-block;
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 157, .4), transparent);
+    vertical-align: middle;
+    margin: 0 14px;
+}
+
+/* ============================================================
+   游戏过渡遮罩（信号干扰 / 星流 / 白光吞没）
+   ============================================================ */
+.game-transition {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: #04050b;
+    overflow: hidden;
+    cursor: default;
+}
+.game-transition.active { display: flex; }
+.game-transition canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+/* 干扰横条 */
+.interfere {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 26px;
+    background: repeating-linear-gradient(90deg,
+        rgba(255, 92, 122, .25) 0 2px, transparent 2px 7px,
+        rgba(0, 255, 157, .18) 7px 9px, transparent 9px 14px);
+    opacity: 0;
+    animation: interfereBand 1.5s linear infinite;
+    pointer-events: none;
+}
+@keyframes interfereBand {
+    0%   { transform: translateY(-30vh); opacity: 0; }
+    8%   { opacity: .5; }
+    92%  { opacity: .5; }
+    100% { transform: translateY(130vh); opacity: 0; }
+}
+/* 最终白闪 */
+.flash-white {
+    position: absolute;
+    inset: 0;
+    background: #eafff4;
+    opacity: 0;
+    pointer-events: none;
+}
+.game-transition.active .flash-white { animation: whiteFlash 1.2s ease forwards; }
+@keyframes whiteFlash {
+    0%   { opacity: 0; }
+    55%  { opacity: .16; }
+    100% { opacity: 1; }
+}
+
+/* ============================================================
+   游戏容器（3D 游戏挂载点，他人开发接入）
+   ============================================================ */
+#game-container {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: none;
+    background: #000;
+}
+#game-container.active {
+    display: block;
+    animation: gameFadeIn .8s ease;
+}
+/* 3D FPS iframe 全屏铺满容器 */
+#game-container iframe#fpsFrame {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+    background: #000;
+}
+@keyframes gameFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+/* 游戏未接入时的占位界面 */
+.game-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background:
+        radial-gradient(ellipse at 50% 60%, rgba(10, 12, 30, .9), #000 90%);
+}
+.game-placeholder .ph-title {
+    font-size: 15px;
+    letter-spacing: 5px;
+    color: var(--green);
+    margin-bottom: 18px;
+    text-transform: uppercase;
+}
+.game-placeholder .ph-sub {
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    line-height: 2;
+}
+.game-placeholder .ph-sub .tag {
+    color: var(--amber);
+}
+.game-placeholder .ph-return {
+    margin-top: 40px;
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, .18);
+    padding: 10px 26px;
+    cursor: pointer;
+    transition: all .3s ease;
+}
+.game-placeholder .ph-return:hover {
+    color: var(--green);
+    border-color: rgba(0, 255, 157, .5);
+    box-shadow: 0 0 16px rgba(0, 255, 157, .2);
+}
+
+/* 游戏中锁定滚动 */
+body.in-game { overflow: hidden; }
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 860px) {
+    .struct-grid { grid-template-columns: 1fr; }
+    .dossier-row { grid-template-columns: 1fr; gap: 4px; }
+    .dossier-row .flag { justify-self: start; }
+    section { padding: 12vh 6vw; }
+    .arrival-title h1 { letter-spacing: 6px; }
+    .naming-line { letter-spacing: 2px; }
+    .entry-line { letter-spacing: 3px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+</style>
+</head>
+<body data-depth="0">
+
+<div class="bg"></div>
+<div class="scanlines"></div>
+<div class="noise"></div>
+
+<!-- ==================== 区块 1：抵达 ==================== -->
+<section id="arrival">
+    <div class="boot-log" id="bootLog" aria-live="polite"></div>
+    <div class="arrival-title" id="arrivalTitle">
+        <div class="code glitch" data-text="PL-1998">PL-1998</div>
+        <h1 class="glitch" data-text="裴梓良星球">裴梓良星球</h1>
+        <div class="sub">松鼠星系 · 锚点计划 · 最后一批实验体 <em>· 等待命名者</em></div>
+        <div class="sub">这里没有正式的星名——所有正在发生的混乱都自称 <b>「裴梓良」</b>。<br>
+        于是它被叫作 <b>裴梓良星球</b>。混乱在等待一个真正的名字。</div>
+    </div>
+    <div class="scroll-hint" id="scrollHint">
+        继续深入
+        <span class="arrow"></span>
+    </div>
+</section>
+
+<!-- ==================== 区块 2：星球档案 ==================== -->
+<section id="dossier">
+    <div class="sec-inner" data-reveal>
+        <div class="sec-tag"><b>//</b> PLANET DOSSIER —— 星球档案（数据不稳定）</div>
+        <div class="dossier-panel">
+            <div class="dossier-head">
+                <span>PL-1998 档案终端</span>
+                <span class="status">● 形态漂移中</span>
+            </div>
+            <div class="dossier-row">
+                <span class="k">直径</span>
+                <span class="v"><span class="jitter numroll">12,478</span><span class="unit">km</span></span>
+                <span class="flag">±3.2%</span>
+            </div>
+            <div class="dossier-row">
+                <span class="k">自转周期</span>
+                <span class="v drift"><span class="jitter">19.6h</span> → <span class="jitter">18.1h</span></span>
+                <span class="flag">[数据漂移]</span>
+            </div>
+            <div class="dossier-row">
+                <span class="k">大气成分</span>
+                <span class="v">氮 71% · 氧 18% · <span class="jitter">未识别 11%</span></span>
+                <span class="flag">[成分在改变]</span>
+            </div>
+            <div class="dossier-row">
+                <span class="k">地貌稳定度</span>
+                <span class="v"><span class="jitter numroll">0.42</span></span>
+                <span class="flag">持续下降</span>
+            </div>
+            <div class="dossier-row">
+                <span class="k">生态特征</span>
+                <span class="v">选择性共生 · <span class="jitter">仅对认真者</span></span>
+                <span class="flag">[选择性]</span>
+            </div>
+            <div class="dossier-row">
+                <span class="k">结构完整度</span>
+                <span class="v"><span class="jitter numroll">63.7</span><span class="unit">%</span></span>
+                <span class="flag">未完成合拢中</span>
+            </div>
+            <div class="dossier-row">
+                <span class="k">命名状态</span>
+                <span class="v missing">[ 数据缺失 ]</span>
+                <span class="flag">等待写入</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== 区块 3：未完成的结构 ==================== -->
+<section id="structures">
+    <div class="sec-inner" data-reveal>
+        <div class="sec-tag"><b>//</b> UNFINISHED STRUCTURES —— 未完成的结构</div>
+        <div class="struct-grid">
+
+            <!-- 半截的塔 -->
+            <div class="struct-card" data-idx="01">
+                <span class="grow-tip">[ 正在生长... ]</span>
+                <svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="半截的塔">
+    <g transform="translate(52.465 0) scale(1.1236) translate(-180 -111.5)">
+        <g stroke-miterlimit="10">
+            <path pathLength="1" d="M180,245v-100l60,-30l60,30v100" stroke="none" stroke-dasharray=""/>
+            <path pathLength="1" d="M180,170.78992h69.63912" stroke="none" stroke-dasharray=""/>
+            <path pathLength="1" d="M180,195h120" stroke="none" stroke-dasharray=""/>
+            <path pathLength="1" d="M180,225h120" stroke="none" stroke-dasharray=""/>
+            <path pathLength="1" d="M250,163.76742h50" stroke="#ffb347" stroke-dasharray="0.02,0.045"/>
+            <path pathLength="1" d="M240,173.76742l60,-28" stroke="#ff5c7a" stroke-dasharray="0.015,0.05"/>
+            <path pathLength="1" d="M237,115c0,-1.65685 1.34315,-3 3,-3c1.65685,0 3,1.34315 3,3c0,1.65685 -1.34315,3 -3,3c-1.65685,0 -3,-1.34315 -3,-3z" stroke="#ff5c7a" stroke-dasharray=""/>
+        </g>
+    </g>
+</svg>
+                <h3>半截的塔<span class="en">THE HALF TOWER</span></h3>
+                <div class="monologue">「我把自己建到一半，<span class="mono-broken">就忘了为什么</span>。」</div>
+            </div>
+
+            <!-- 只有骨架的桥 -->
+            <div class="struct-card" data-idx="02">
+                <span class="grow-tip">[ 正在合拢... ]</span>
+                <svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="只有骨架的桥">
+                    <path pathLength="1" d="M20 120 Q120 40 220 120" />
+                    <path pathLength="1" d="M60 105 L60 120" />
+                    <path pathLength="1" d="M90 97 L90 120" />
+                    <path pathLength="1" d="M120 92 L120 120" />
+                    <path pathLength="1" d="M150 97 L150 120" />
+                    <path pathLength="1" d="M180 105 L180 120" />
+                    <path pathLength="1" d="M40 120 L200 120" stroke-dasharray=".03 .03" stroke="#5eead4" />
+                    <path pathLength="1" d="M110 92 L110 40 M130 92 L130 40" stroke-dasharray=".02 .06" />
+                    <line x1="110" y1="40" x2="130" y2="40" stroke="#ff5c7a" stroke-dasharray="2 5" />
+                </svg>
+                <h3>骨架桥<span class="en">THE SKELETON BRIDGE</span></h3>
+                <div class="monologue">「桥的骨架还在，<span class="mono-broken">桥面却始终没有铺上</span>。」</div>
+            </div>
+
+            <!-- 刻了一半的文字碑 -->
+            <div class="struct-card" data-idx="03">
+                <span class="grow-tip">[ 正在铭刻... ]</span>
+                <svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="刻了一半的文字碑">
+                    <path pathLength="1" d="M80 140 L80 20 L160 20 L160 140" />
+                    <path pathLength="1" d="M80 20 L120 10 L160 20" />
+                    <path pathLength="1" d="M80 140 L160 140" stroke="#ffb347" stroke-dasharray=".04 .03" />
+                    <!-- 半个未完成的笔画 -->
+                    <path pathLength="1" d="M105 100 L120 100 L120 62 M120 62 Q120 50 132 50" stroke="#5eead4" />
+                    <path pathLength="1" d="M138 88 L152 88" stroke="#5eead4" stroke-dasharray=".02 .03" />
+                    <path pathLength="1" d="M96 100 L100 100 M96 66 L100 66" stroke="#ff5c7a" stroke-dasharray=".015 .05" />
+                    <circle cx="152" cy="88" r="2.5" stroke="#ff5c7a" />
+                </svg>
+                <h3>半截文字碑<span class="en">THE HALF-INSCRIBED STELE</span></h3>
+                <div class="monologue">「那是名字的开头，我写了很久，<span class="mono-broken">只刻下第一个笔画</span>。」</div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ==================== 区块 4：等待命名者 ==================== -->
+<section id="naming">
+    <div class="sec-inner" data-reveal>
+        <div class="naming-kicker">/// 命名协议 · NAMING PROTOCOL ///</div>
+        <div class="naming-line">
+            它在等一个<br>
+            <span class="hl">认真对待它名字</span> 的人
+        </div>
+        <div class="naming-sub">
+            星球的核心意识反复开口又沉默。<br>
+            散落的结构是它 <b>想成为</b> 的形状，却在每一次自我怀疑中退回未完成。<br>
+            星门只响应一种人——<b>愿意认真对待它的人</b>。
+        </div>
+        <div class="naming-sub" style="font-size:12px; color:#5eead4; opacity:.75;">
+            这里没有正式的星名——所有正在发生的混乱都自称 <b>「裴梓良」</b>。<br>
+            于是它被叫作 <b>裴梓良星球</b>。混乱在等待一个真正的名字。
+        </div>
+        <div class="naming-sub" style="font-size:12px; color:#3f5c52;">
+            「输入名字，星门会知道路。」
+        </div>
+        <div class="storm-hint">
+            <span class="noise-bar"></span>
+            监测到：某种混乱正在发生...
+            <span class="noise-bar"></span>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== 区块 5：游戏入口 ==================== -->
+<section id="game-entry">
+    <div class="sec-inner" data-reveal>
+        <div class="entry-eyebrow">/// 混乱协议 · CHAOS PROTOCOL ///</div>
+        <div class="entry-line" id="entryLine"></div>
+        <button class="btn-chaos" id="btnChaos" type="button" aria-label="进入游戏解决混乱">[ 解决混乱 -&gt; ]</button>
+        <div class="entry-foot">
+            <span>3D 枪战游戏</span><span class="divider"></span><span>PL-1998 深层协议</span>
+        </div>
+    </div>
+</section>
+
+<!-- 游戏过渡遮罩 -->
+<div class="game-transition" id="gameTransition" aria-hidden="true">
+    <canvas id="warpCanvas"></canvas>
+    <div class="interfere"></div>
+    <div class="interfere" style="animation-delay:.5s; height:14px;"></div>
+    <div class="interfere" style="animation-delay:1s; height:8px;"></div>
+    <div class="flash-white"></div>
+</div>
+
+<!-- 游戏容器：3D 枪战游戏挂载点 -->
+<div id="game-container" aria-hidden="true">
+    <!-- 3D FPS 游戏（相对路径 iframe，保证 file:// 双击可用） -->
+    <iframe id="fpsFrame" src="fps-game/index.html" title="PL-1998 混乱协议 3D FPS" allow="pointer-lock; fullscreen"></iframe>
+    <div class="game-placeholder" id="gamePlaceholder">
+        <div class="ph-title">3D GAME INTERFACE</div>
+        <div class="ph-sub">
+            正在装载 3D 游戏模块（需要联网加载 Three.js CDN）...<br>
+            当前状态：<span class="tag" id="phStatus">等待游戏模块挂载</span>
+        </div>
+        <button class="ph-return" id="btnReturn" type="button">[ 返回星球表面 ]</button>
+    </div>
+</div>
+
+<script>
+/* ============================================================
+   裴梓良星球 PL-1998 —— 交互脚本
+   纯原生 JS：逐字打印 / 滚动氛围 / 生长动画 / 游戏过渡接口
+   ============================================================ */
+(function () {
+    'use strict';
+
+    /* ---------- 工具 ---------- */
+    const $ = s => document.querySelector(s);
+    const delay = ms => new Promise(r => setTimeout(r, ms));
+
+    /* ---------- 区块 1：抵达日志逐字打印 ---------- */
+    const bootLines = [
+        { t: '[信号] 检测到来自松鼠星系的跃迁信标...', cls: '' },
+        { t: '[坐标] 锁定 PL-1998 轨道 · 漂移率 17.3%', cls: 'warn' },
+        { t: '[神经] 建立神经链接...', cls: '' },
+         { t: '[神经] 进度: 100%', cls: 'ok' },
+        { t: '[神经] 链接完成', cls: 'ok' },
+        { t: '[内核] 星球意识响应：', cls: '' },
+        { t: '        ...静默。', cls: 'warn' },
+        { t: '        还是...静默。', cls: 'warn' },
+        { t: '[星门] 检测到访客。星门不响应好奇者。', cls: '' },
+        { t: '[星门] 等待认真对待它的人。', cls: 'ok' }
+    ];
+
+    async function bootSequence() {
+        const log = $('#bootLog');
+        for (let i = 0; i < bootLines.length; i++) {
+            const line = bootLines[i];
+            const el = document.createElement('div');
+            el.className = 'log-line';
+            log.appendChild(el);
+            // 逐字打印：文本写入 log-line 自身，caret 光标作为行尾附加元素（避免文字被塞进 7px 宽的 span 导致竖排）
+            for (let j = 0; j <= line.t.length; j++) {
+                el.textContent = line.t.slice(0, j);
+                const caret = document.createElement('span');
+                caret.className = 'caret';
+                el.appendChild(caret);
+                log.scrollTop = log.scrollHeight;
+                await delay(18);
+            }
+            // 移除行尾光标
+            const caret = el.querySelector('.caret');
+            if (caret) caret.remove();
+            // 追加颜色高亮
+            if (line.cls === 'ok' || line.cls === 'warn') {
+                el.classList.add(line.cls);
+            }
+            await delay(line.cls === 'warn' ? 320 : 140);
+        }
+        // 浮现星球名称
+        $('#arrivalTitle').classList.add('show');
+        $('#scrollHint').classList.add('show');
+    }
+
+    /* ---------- 滚动进度：驱动氛围加深（越往下越暗越静） ---------- */
+    function bindScrollDepth() {
+        const depths = [0, 0, 1, 2, 3]; // 按区块索引映射氛围等级
+        const sections = Array.from(document.querySelectorAll('section'));
+        const update = () => {
+            const vh = window.innerHeight;
+            let depth = 0;
+            for (let i = 0; i < sections.length; i++) {
+                const r = sections[i].getBoundingClientRect();
+                if (r.top < vh * 0.6) depth = depths[i] || 0;
+            }
+            document.body.setAttribute('data-depth', String(depth));
+        };
+        window.addEventListener('scroll', update, { passive: true });
+        update();
+    }
+
+    /* ---------- 区块渐入 / 结构生长（IntersectionObserver） ---------- */
+    function bindReveal() {
+        const io = new IntersectionObserver(entries => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add('visible');
+                    io.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.22 });
+        document.querySelectorAll('[data-reveal]').forEach(el => io.observe(el));
+
+        // 结构卡片：滚动到视野时开始"生长"（SVG 线稿描边）
+        const structIO = new IntersectionObserver(entries => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add('grown');
+                    structIO.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.3 });
+        document.querySelectorAll('.struct-card').forEach(el => structIO.observe(el));
+    }
+
+    /* ---------- 区块 5：入口文案字符输入动画 ---------- */
+    const ENTRY_TEXT = '哦，看来混乱又发生了';
+    async function typeEntryLine() {
+        const el = $('#entryLine');
+        const io = new IntersectionObserver(async entries => {
+            if (!entries[0].isIntersecting) return;
+            io.disconnect();
+            el.innerHTML = '';
+            for (let j = 1; j <= ENTRY_TEXT.length; j++) {
+                el.innerHTML = ENTRY_TEXT.slice(0, j) + '<span class="caret"></span>';
+                await delay(110);
+            }
+            el.innerHTML = '哦，看来<strong class="chaos">混乱</strong>又发生了';
+        }, { threshold: 0.5 });
+        io.observe(el);
+    }
+
+    /* ============================================================
+       游戏衔接接口（供 3D 枪战游戏开发者接入）
+       ------------------------------------------------------------
+       · 挂载点：#game-container（position: fixed 全屏，z-index 300）
+       · 触发：window.PLGame.enter() —— 播放干扰/星流/白闪过渡后显示容器
+       · 回退：window.PLGame.exit()  —— 淡出容器并返回页面原位置
+       · 事件：容器显示/隐藏时派发 plgame:entered / plgame:exited
+       · 第三方游戏脚本可在 DOMContentLoaded 后监听事件自行初始化
+       ============================================================ */
+    const gameContainer = $('#game-container');
+    const gameTransition = $('#gameTransition');
+    const warpCanvas = $('#warpCanvas');
+    let warpCtx = warpCanvas.getContext('2d');
+    let warpRaf = 0;
+    let inGame = false;
+
+    /* 过渡动画：星流粒子（复用星系终端视觉语言） */
+    function startWarpFx() {
+        const W = warpCanvas.width = warpCanvas.offsetWidth;
+        const H = warpCanvas.height = warpCanvas.offsetHeight;
+        const stars = [];
+        const N = 140;
+        for (let i = 0; i < N; i++) {
+            stars.push({
+                ang: Math.random() * Math.PI * 2,
+                dist: Math.random() * 0.35,
+                speed: 0.012 + Math.random() * 0.03,
+                len: 0.06 + Math.random() * 0.14,
+                size: 0.8 + Math.random() * 1.6
+            });
+        }
+        const t0 = Date.now();
+        const DURATION = 1500;
+        function draw() {
+            const progress = Math.min(1, (Date.now() - t0) / DURATION);
+            warpCtx.clearRect(0, 0, W, H);
+            const cx = W / 2, cy = H / 2;
+            const maxR = Math.max(W, H) * 0.75;
+            stars.forEach(s => {
+                const p = progress * (0.4 + s.speed * 28);
+                const d = s.dist * maxR + p * maxR * (0.55 + s.speed * 10);
+                const x1 = cx + Math.cos(s.ang) * d;
+                const y1 = cy + Math.sin(s.ang) * d;
+                const x2 = cx + Math.cos(s.ang) * (d - s.len * maxR);
+                const y2 = cy + Math.sin(s.ang) * (d - s.len * maxR);
+                warpCtx.strokeStyle = 'rgba(0,255,157,' + (0.9 - progress * 0.5) + ')';
+                warpCtx.lineWidth = s.size;
+                warpCtx.beginPath();
+                warpCtx.moveTo(x1, y1);
+                warpCtx.lineTo(x2, y2);
+                warpCtx.stroke();
+            });
+            const glow = warpCtx.createRadialGradient(cx, cy, 0, cx, cy, 90 + progress * 60);
+            glow.addColorStop(0, 'rgba(0,255,157,.5)');
+            glow.addColorStop(1, 'transparent');
+            warpCtx.fillStyle = glow;
+            warpCtx.beginPath();
+            warpCtx.arc(cx, cy, 150 + progress * 80, 0, Math.PI * 2);
+            warpCtx.fill();
+            if (progress < 1) warpRaf = requestAnimationFrame(draw);
+        }
+        draw();
+    }
+
+    function enterGame() {
+        if (inGame) return;
+        inGame = true;
+        document.body.classList.add('in-game');
+        gameTransition.classList.add('active');
+        startWarpFx();
+        setTimeout(() => {
+            gameTransition.classList.remove('active');
+            cancelAnimationFrame(warpRaf);
+            gameContainer.classList.add('active');
+            gameContainer.setAttribute('aria-hidden', 'false');
+            document.dispatchEvent(new CustomEvent('plgame:entered'));
+        }, 1700);
+    }
+
+    function exitGame() {
+        if (!inGame) return;
+        inGame = false;
+        gameContainer.classList.remove('active');
+        gameContainer.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('in-game');
+        document.dispatchEvent(new CustomEvent('plgame:exited'));
+    }
+
+    /* 对外接口（供第三方游戏模块调用） */
+    window.PLGame = {
+        enter: enterGame,
+        exit: exitGame,
+        get active() { return inGame; },
+        container: gameContainer
+    };
+
+    /* 入口按钮 / 占位返回按钮 */
+    $('#btnChaos').addEventListener('click', () => {
+        if (window.PLGameEnterHook && typeof window.PLGameEnterHook === 'function') {
+            // 若第三方已注册自定义入口，则交由其处理
+            window.PLGameEnterHook();
+        } else {
+            window.PLGame.enter();
+        }
+    });
+    $('#btnReturn').addEventListener('click', () => window.PLGame.exit());
+
+    /* ---------- 3D FPS 挂载状态检测 ----------
+       通过 postMessage（plgame-ready / plgame-error）+ iframe load 轮询 + 超时兜底，
+       判定游戏模块是否成功挂载，用于隐藏 #gamePlaceholder 占位层 */
+    const fpsFrame = $('#fpsFrame');
+    const phStatus = $('#phStatus');
+    const gamePlaceholder = $('#gamePlaceholder');
+    let fpsReady = false;
+    let fpsFailed = false;
+    let fpsTimer = null;
+
+    function setFpsReady() {
+        if (fpsReady || fpsFailed) return;
+        fpsReady = true;
+        if (fpsTimer) clearTimeout(fpsTimer);
+        if (phStatus) phStatus.textContent = '游戏已挂载';
+        if (gamePlaceholder) gamePlaceholder.style.display = 'none';
+    }
+
+    function setFpsFailed() {
+        if (fpsReady || fpsFailed) return;
+        fpsFailed = true;
+        if (fpsTimer) clearTimeout(fpsTimer);
+        if (phStatus) phStatus.textContent = '游戏模块加载失败：无法连接 Three.js CDN，请检查网络后刷新重试';
+    }
+
+    /* 通道 1：postMessage 事件（https 跨域部署可靠） */
+    window.addEventListener('message', (ev) => {
+        const d = ev.data;
+        if (!d || typeof d !== 'object') return;
+        if (d.type === 'plgame-ready') setFpsReady();
+        else if (d.type === 'plgame-error') setFpsFailed();
+    });
+
+    /* 通道 2：iframe load 后轮询探测就绪标记（file:// 同源可用） */
+    if (fpsFrame) {
+        fpsFrame.addEventListener('load', () => {
+            let probe = 0;
+            const iv = setInterval(() => {
+                probe++;
+                try {
+                    const w = fpsFrame.contentWindow;
+                    if (w && w.__FPS_GAME_READY__) {
+                        clearInterval(iv);
+                        setFpsReady();
+                        return;
+                    }
+                } catch (e) {}
+                if (probe >= 30) clearInterval(iv);
+            }, 100);
+        });
+        /* 通道 3：超时兜底（CDN 慢但未报错，15 秒未就绪判失败） */
+        fpsTimer = setTimeout(() => {
+            if (!fpsReady && !fpsFailed) setFpsFailed();
+        }, 15000);
+    }
+
+    /* ---------- 启动 ---------- */
+    bindScrollDepth();
+    bindReveal();
+    typeEntryLine();
+    bootSequence();
+
+})();
+</script>
+</body>
+</html>
