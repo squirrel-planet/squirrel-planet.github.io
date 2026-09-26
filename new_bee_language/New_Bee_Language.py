@@ -6,25 +6,33 @@ from typing import List
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding = 'utf-8')
 sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding = 'utf-8')
 
-def print_msg(string):
-    if '--only-output' not in sys.argv:
-        print(string)
+def print_msg(message_list, should_exit = False, color = '\033[0m', ignore_only_output = False):
+    if '--only-output' not in sys.argv or ignore_only_output:
+        if message_list:
+
+            def get_content(value, level = 0):
+                content = ''
+                for s in value:
+                    if isinstance(s, str):
+                        indent = level * '  '
+                        if '\n' in s:
+                            lines = s.split('\n')
+                            content += '\n' + indent + '·' + lines[0]
+                            for line in lines[1:]:
+                                content += '\n' + indent + line
+                        else:
+                            content += f'\n{indent}·{s}'
+                    else:
+                        content += get_content(s, level + 1)
+                return content
+
+            content = get_content(message_list)
+            print(f'\n{color}{content}\033[0m\n')
+    if should_exit:
+        sys.exit(1)
 
 def error(message_list: list) -> None:
-    if message_list:
-
-        def get_content(value, level = 0):
-            content = ''
-            for s in value:
-                if isinstance(s, str):
-                    content += f'\n{level * '  '}·{s}'
-                else:
-                    content += get_content(s, level + 1)
-            return content
-
-        content = get_content(message_list)
-        print(f'\n\033[31m{content}\033[0m\n')
-    sys.exit(1)
+    print_msg(message_list, should_exit = True, color = '\033[91m', ignore_only_output = True)
 
 class bee(object):
     def __init__(self, type: str = 'egg', value: str | int | None = None):
@@ -38,7 +46,7 @@ class bee(object):
         else:
             self.type = 'bee'
 
-class new_bee_lang_interpreter(object):
+class new_bee_language_interpreter(object):
     def __init__(self, code: str):
         self.line_number = 0
         self.code = code
@@ -57,7 +65,7 @@ class new_bee_lang_interpreter(object):
         self.encouragements = [
             '继续加油！你快要理解了... 才怪！',
             '哇！你又执行了一条指令！真是个天才！',
-            '你知道吗？你正在成为 New Bee Lang 专家的道路上... 走向深渊。',
+            '你知道吗？你正在成为 New Bee Language 专家的道路上... 走向深渊。',
             '你的代码正在运行，虽然结果是错误的。',
             '如果疼痛是学习的一部分，你现在已经是博士了。',
             '蜜蜂们为你的坚持感到骄傲（真的吗？）。',
@@ -108,7 +116,7 @@ class new_bee_lang_interpreter(object):
         if char:
             insults = [
                 f'你在干什么？！字符 “{char}” 不允许使用！',
-                f'你脑子里有蜜蜂吗？“{char}” 不是有效的 New Bee Lang 字符！',
+                f'你脑子里有蜜蜂吗？“{char}” 不是有效的 New Bee Language 字符！',
                 f'我没想到有人会笨到使用 “{char}”，但你做到了！',
                 f'“{char}” 这个字符不属于我们的语言！你完了！'
             ]
@@ -227,10 +235,10 @@ class new_bee_lang_interpreter(object):
             self.run_line(line_tokens)
         if not self.goodbye:
             self.error_with_details([
-                '你没有告别！程序必须以 goodbye New Bee Lang 结尾！',
-                '这是 New Bee Lang 的基本礼仪！',
+                '你没有告别！程序必须以 goodbye New Bee Language 结尾！',
+                '这是 New Bee Language 的基本礼仪！',
                 '没有告别，蜜蜂们会伤心的！',
-                '请在你的代码结尾添加: goodbye New Bee Lang',
+                '请在你的代码结尾添加: goodbye New Bee Language',
                 'P.S. 蜜蜂们期待你的下次光临（并不）！'
             ])
         if self.judgment_value or self.loop_break:
@@ -286,7 +294,7 @@ class new_bee_lang_interpreter(object):
             return first
 
     def give_up(self):
-        print_msg('\n程序结束。再见，愚蠢的人类！蜜蜂们要去采蜜了。')
+        print_msg(['程序结束。再见，愚蠢的人类！蜜蜂们要去采蜜了。'])
         sys.exit(0)
 
     def is_working_bee_slack(self) -> bool:
@@ -320,9 +328,9 @@ class new_bee_lang_interpreter(object):
         cmd = tokens[0]
         length = len(tokens)
         if cmd == 'hello':
-            if tokens[1:] != ['New', 'Bee', 'Lang']:
+            if tokens[1:] != ['New', 'Bee', 'Language']:
                 self.error_with_details([
-                    'hello 后面只能是 New Bee Lang！'
+                    'hello 后面只能是 New Bee Language！'
                 ])
             if self.hello:
                 self.error_with_details([
@@ -408,9 +416,9 @@ class new_bee_lang_interpreter(object):
                 if not self.judgment_value[-1]:
                     return
             if cmd == 'goodbye':
-                if tokens[1:] != ['New', 'Bee', 'Lang']:
+                if tokens[1:] != ['New', 'Bee', 'Language']:
                     self.error_with_details(
-                        ['goodbye 后面只能是 New Bee Lang！']
+                        ['goodbye 后面只能是 New Bee Language！']
                     )
                 if self.goodbye:
                     self.error_with_details([
@@ -764,10 +772,10 @@ class new_bee_lang_interpreter(object):
                 )
         else:
             self.error_with_details([
-                '你没有打招呼！程序必须以 hello New Bee Lang 开头！',
-                '这是 New Bee Lang 的基本礼仪！',
+                '你没有打招呼！程序必须以 hello New Bee Language 开头！',
+                '这是 New Bee Language 的基本礼仪！',
                 '没有问候，就没有代码运行!',
-                '请在你的代码开头添加: hello New Bee Lang',
+                '请在你的代码开头添加: hello New Bee Language',
                 'P.S. 蜜蜂们不会欢迎粗鲁的程序员！'
             ])
         if cmd != 'hello' and not self.do_not_give_up:
@@ -781,10 +789,11 @@ class new_bee_lang_interpreter(object):
         self.do_not_slack -= 1
 
 def main() -> None:
+    print('\033[0m')
     if len(sys.argv) < 2:
         error(
-            ['错误: 没有填入参数', '请使用: python New_Bee_Lang.py <file_name>',
-            '示例: python New_Bee_Lang.py hello_world.nbl']
+            ['错误: 没有填入参数', '请使用: python New_Bee_Language.py <file_name>',
+            '示例: python New_Bee_Language.py hello_world.nbl']
         )
     file_path = sys.argv[1]
     try:
@@ -796,9 +805,9 @@ def main() -> None:
     except Exception:
         code = ''
         error(['读取文件失败，蜜蜂们表示同情（并没有）'])
-    interpreter = new_bee_lang_interpreter(code)
+    interpreter = new_bee_language_interpreter(code)
     interpreter.run()
-    print_msg('\n程序结束。再见，愚蠢的人类！蜜蜂们要去采蜜了。')
+    print_msg(['程序结束。再见，愚蠢的人类！蜜蜂们要去采蜜了。'])
 
 if __name__ == '__main__':
     main()
