@@ -275,6 +275,7 @@ body { font-family: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace; colo
 #btnFire:active { background: rgba(255,0,85,.28); box-shadow: 0 0 30px rgba(255,0,85,.7); }
 #btnReload { left: 0; bottom: 0; width: 72px; height: 72px; }
 #btnSwitch { right: 0; top: 0; width: 72px; height: 72px; }
+#btnRun { left: 0; top: 0; width: 72px; height: 72px; }
 .btn-zone button small { display: block; font-size: 9px; opacity: .7; }
 /* 触控模式下弹药信息上移，避免被右下按钮遮挡 */
 body.touch-on #ammo { top: 74px; bottom: auto; }
@@ -320,6 +321,7 @@ body.touch-on #ammo { top: 74px; bottom: auto; }
     <div id="touchControls">
         <div id="joyZone"><div id="joyBase"><div id="joyKnob"></div></div></div>
         <div class="btn-zone">
+            <button id="btnRun" type="button">奔跑<small>SHIFT</small></button>
             <button id="btnSwitch" type="button">切枪<small>1-4</small></button>
             <button id="btnReload" type="button">换弹<small>R</small></button>
             <button id="btnFire" type="button">开火<small>FIRE</small></button>
@@ -355,7 +357,7 @@ body.touch-on #ammo { top: 74px; bottom: auto; }
     <div class="ov-setting">
         <span class="ov-setting-label">手机端操作</span>
         <button class="ov-toggle" id="btnTouchToggle" type="button">关闭</button>
-        <span class="ov-setting-note">开启后：左下摇杆移动（对应 WASD），右下按钮射击 / 换弹 / 切枪</span>
+        <span class="ov-setting-note">开启后：左下摇杆移动（对应 WASD），右下按钮射击 / 换弹 / 切枪 / 奔跑（对应 Shift 加速）</span>
     </div>
     <button class="ov-btn" id="btnStartGame" type="button">开始游戏</button>
     <div class="ov-hint">按下任意键或开始游戏按钮继续... 电脑端点击画面锁定指针</div>
@@ -1543,6 +1545,7 @@ const joyKnob = document.getElementById('joyKnob');
 const btnFire = document.getElementById('btnFire');
 const btnReload = document.getElementById('btnReload');
 const btnSwitch = document.getElementById('btnSwitch');
+const btnRun = document.getElementById('btnRun');
 const btnTouchToggle = document.getElementById('btnTouchToggle');
 
 const JOY_R = 66; // 摇杆半径 px
@@ -1628,6 +1631,26 @@ btnSwitch.addEventListener('pointerdown', e => {
     e.preventDefault();
     switchWeapon((curWeapon + 1) % 4);
 });
+/* 跑步按钮（对应键盘 Shift：移动加速 PLAYER.runMult、奔跑散射惩罚 ×1.6 自动生效） */
+let runPointerId = null;
+btnRun.addEventListener('pointerdown', e => {
+    if (!touchMode || !started || isDead) return;
+    if (runPointerId !== null) return;
+    runPointerId = e.pointerId;
+    btnRun.setPointerCapture(e.pointerId);
+    keys.ShiftLeft = true;
+    e.preventDefault();
+});
+btnRun.addEventListener('pointerup', e => {
+    if (e.pointerId !== runPointerId) return;
+    runPointerId = null;
+    keys.ShiftLeft = false;
+});
+btnRun.addEventListener('pointercancel', e => {
+    if (e.pointerId !== runPointerId) return;
+    runPointerId = null;
+    keys.ShiftLeft = false;
+});
 
 /* 触控视角：非控件区域单指拖拽旋转（触控模式不依赖指针锁定） */
 document.addEventListener('pointerdown', e => {
@@ -1659,6 +1682,7 @@ function applyTouchSetting() {
     if (!touchMode) {
         joyReset();
         if (firePointerId !== null) { firePointerId = null; mouseDown = false; aiming = false; }
+        if (runPointerId !== null) { runPointerId = null; keys.ShiftLeft = false; }
         viewPointerId = null;
     }
     if (started) updateTouchControls();
